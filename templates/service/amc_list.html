@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}AMC Contracts - Solar ERP{% endblock %}
+{% block content %}
+<div class="page-head"><h1>AMC Contracts</h1>{% if user.can_manage_service %}<a class="btn primary" href="{% url 'service:amc_create' %}">+ New AMC</a>{% endif %}</div>
+{% include "service/_subnav.html" %}
+<table class="grid"><thead><tr><th>Contract #</th><th>Customer</th><th>Period</th><th>Amount</th><th>Visits</th><th>Status</th></tr></thead><tbody>
+  {% for a in contracts %}<tr onclick="window.location='{% url 'service:amc_detail' a.pk %}'" style="cursor:pointer">
+    <td>{{ a.contract_number }}</td><td>{{ a.customer.name }}</td><td>{{ a.start_date }} &rarr; {{ a.end_date }}</td>
+    <td>Rs {{ a.amount }}</td><td>{{ a.visits_done }}/{{ a.visits.count }}</td>
+    <td>{% if a.is_active %}<span class="badge s-won">Active</span>{% if a.is_expiring_soon %} <span class="badge s-lost">Expiring</span>{% endif %}{% else %}<span class="badge">{{ a.get_status_display }}</span>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="6" class="muted" style="text-align:center;padding:24px">No AMC contracts yet.</td></tr>{% endfor %}</tbody></table>
+{% endblock %}

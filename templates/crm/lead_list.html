@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Leads - Solar ERP{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Leads</h1><a class="btn primary" href="{% url 'crm:lead_create' %}">+ New Lead</a></div>
+<div class="toolbar">
+  <input class="input" type="search" name="q" placeholder="Search name or mobile..." hx-get="{% url 'crm:lead_rows' %}" hx-target="#lead-rows" hx-trigger="keyup changed delay:300ms" hx-include="[name='status']">
+  <select class="input" name="status" hx-get="{% url 'crm:lead_rows' %}" hx-target="#lead-rows" hx-trigger="change" hx-include="[name='q']">
+    <option value="">All statuses</option>{% for value, label in statuses %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
+</div>
+<table class="grid"><thead><tr><th>Lead #</th><th>Customer</th><th>Mobile</th><th>Capacity</th><th>Status</th><th>Owner</th></tr></thead>
+  <tbody id="lead-rows">{% include "crm/partials/lead_rows.html" %}</tbody></table>
+{% endblock %}

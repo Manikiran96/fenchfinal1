@@ -1,0 +1,25 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>{{ q.quotation_number }}</title>
+<style>@page{size:A4;margin:18mm}body{font-family:Helvetica,Arial,sans-serif;color:#1f2937;font-size:12px}
+.head{display:flex;justify-content:space-between;border-bottom:3px solid #f59e0b;padding-bottom:12px}
+.company h1{margin:0;font-size:20px;color:#b45309}.company p{margin:2px 0;color:#6b7280;font-size:11px}
+.doc-meta{text-align:right}.doc-meta h2{margin:0;font-size:22px}.badge{display:inline-block;padding:2px 8px;border-radius:10px;background:#fef3c7;color:#92400e;font-size:10px}
+.section{margin-top:22px}.section h3{margin:0 0 8px;font-size:13px;color:#92400e;border-bottom:1px solid #e5e7eb;padding-bottom:4px}
+.grid2{display:flex;gap:24px}.grid2>div{flex:1}table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid #e5e7eb;font-size:11px}th{background:#fff7ed;color:#92400e}
+.price{width:55%;margin-left:auto}.price td{border:none;padding:5px 8px}.price tr.total td{border-top:2px solid #f59e0b;font-weight:bold;font-size:14px;color:#b45309}
+.right{text-align:right}.foot{margin-top:40px;font-size:10px;color:#6b7280;border-top:1px solid #e5e7eb;padding-top:8px}
+.print-btn{margin:14px 0}@media print{.print-btn{display:none}}</style></head><body>
+{% if print_mode %}<div class="print-btn"><button onclick="window.print()">Print / Save as PDF</button></div>{% endif %}
+<div class="head"><div class="company"><h1>{{ company.name }}</h1><p>{{ company.address }}</p><p>Phone: {{ company.phone }} &middot; {{ company.email }}</p><p>GSTIN: {{ company.gstin }}</p></div>
+  <div class="doc-meta"><h2>QUOTATION</h2><p><b>{{ q.quotation_number }}</b> (Rev {{ q.revision }})</p><p>Date: {{ q.created_at|date:"d M Y" }}</p><p><span class="badge">{{ q.get_status_display }}</span></p></div></div>
+<div class="section grid2"><div><h3>Bill To</h3><p><b>{{ q.lead.customer_name }}</b></p><p>{{ q.lead.address }}</p><p>{{ q.lead.city }}, {{ q.lead.state }} {{ q.lead.pincode }}</p><p>Mobile: {{ q.lead.mobile }}{% if q.lead.email %} &middot; {{ q.lead.email }}{% endif %}</p></div>
+  <div><h3>System</h3><p><b>Capacity:</b> {{ q.capacity_kw }} kW</p><p><b>Panel brand:</b> {{ q.panel_brand|default:"-" }}</p><p><b>Inverter brand:</b> {{ q.inverter_brand|default:"-" }}</p></div></div>
+{% if items %}<div class="section"><h3>Line Items</h3><table><thead><tr><th>Description</th><th class="right">Qty</th><th class="right">Unit Price</th><th class="right">Amount</th></tr></thead><tbody>
+  {% for it in items %}<tr><td>{{ it.description }}</td><td class="right">{{ it.quantity }}</td><td class="right">Rs {{ it.unit_price }}</td><td class="right">Rs {{ it.amount }}</td></tr>{% endfor %}</tbody></table></div>{% endif %}
+<div class="section"><h3>Price Summary</h3><table class="price"><tr><td>Material cost</td><td class="right">Rs {{ q.material_cost }}</td></tr>
+  <tr><td>Base amount</td><td class="right">Rs {{ q.base_amount }}</td></tr><tr><td>Tax ({{ q.tax_percent }}%)</td><td class="right">Rs {{ q.tax_amount }}</td></tr>
+  <tr><td>Quotation value</td><td class="right">Rs {{ q.quotation_value }}</td></tr><tr><td>Less: Subsidy</td><td class="right">- Rs {{ q.subsidy_amount }}</td></tr>
+  <tr class="total"><td>Final Payable</td><td class="right">Rs {{ q.final_price }}</td></tr></table></div>
+{% if q.notes %}<div class="section"><h3>Notes</h3><p>{{ q.notes }}</p></div>{% endif %}
+<div class="foot"><p>This is a computer-generated quotation and is valid for 15 days. Prices subject to final site survey.</p><p>Thank you for choosing {{ company.name }}.</p></div>
+</body></html>

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Quotations - Solar ERP{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Quotations</h1></div>
+<div class="toolbar">
+  <input class="input" type="search" name="q" placeholder="Search number or customer..." hx-get="{% url 'quotations:quotation_rows' %}" hx-target="#quotation-rows" hx-trigger="keyup changed delay:300ms" hx-include="[name='status']">
+  <select class="input" name="status" hx-get="{% url 'quotations:quotation_rows' %}" hx-target="#quotation-rows" hx-trigger="change" hx-include="[name='q']">
+    <option value="">All statuses</option>{% for value, label in statuses %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
+</div>
+<table class="grid"><thead><tr><th>Number</th><th>Rev</th><th>Customer</th><th>Capacity</th><th>Final Price</th><th>Status</th></tr></thead>
+  <tbody id="quotation-rows">{% include "quotations/partials/quotation_rows.html" %}</tbody></table>
+{% endblock %}

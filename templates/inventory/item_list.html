@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Inventory - Solar ERP{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Items &amp; Stock</h1>{% if user.can_manage_inventory %}<a class="btn primary" href="{% url 'inventory:item_create' %}">+ New Item</a>{% endif %}</div>
+{% include "inventory/_subnav.html" %}
+<div class="toolbar">
+  <input class="input" type="search" name="q" placeholder="Search SKU, name or brand..." hx-get="{% url 'inventory:item_rows' %}" hx-target="#item-rows" hx-trigger="keyup changed delay:300ms" hx-include="[name='category'],[name='low']">
+  <select class="input" name="category" hx-get="{% url 'inventory:item_rows' %}" hx-target="#item-rows" hx-trigger="change" hx-include="[name='q'],[name='low']">
+    <option value="">All categories</option>{% for value, label in categories %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
+  <label class="row" style="white-space:nowrap"><input type="checkbox" name="low" value="1" hx-get="{% url 'inventory:item_rows' %}" hx-target="#item-rows" hx-trigger="change" hx-include="[name='q'],[name='category']"> Low stock only</label>
+</div>
+<table class="grid"><thead><tr><th>SKU</th><th>Name</th><th>Category</th><th>Brand</th><th>Unit Price</th><th>In Stock</th><th>Reorder</th><th>Status</th></tr></thead>
+  <tbody id="item-rows">{% include "inventory/partials/item_rows.html" %}</tbody></table>
+{% endblock %}

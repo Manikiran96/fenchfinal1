@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Net Metering - Solar ERP{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Net Metering</h1><a class="btn primary" href="{% url 'finance:netmetering_create' %}">+ New Record</a></div>
+{% include "finance/_subnav.html" %}
+<table class="grid"><thead><tr><th>Project</th><th>Customer</th><th>DISCOM</th><th>Application #</th><th>Load (kW)</th><th>Status</th><th></th></tr></thead><tbody>
+  {% for r in records %}<tr>
+    <td>{{ r.project.project_number }}</td><td>{{ r.project.customer.name }}</td><td>{{ r.discom|default:"-" }}</td>
+    <td>{{ r.application_no|default:"-" }}</td><td>{{ r.sanctioned_load_kw|default:"-" }}</td>
+    <td><span class="badge s-{{ r.status|lower }}">{{ r.get_status_display }}</span></td>
+    <td><a class="btn" style="padding:5px 10px" href="{% url 'finance:netmetering_edit' r.pk %}">Edit</a></td></tr>
+  {% empty %}<tr><td colspan="7" class="muted" style="text-align:center;padding:24px">No net-metering records yet.</td></tr>{% endfor %}
+</tbody></table>
+{% endblock %}

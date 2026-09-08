@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{ po.po_number }} - Solar ERP{% endblock %}
+{% block content %}
+<div class="page-head"><h1>{{ po.po_number }} <span class="muted">&middot; {{ po.supplier.name }}</span></h1><span class="badge s-{{ po.status|lower }}">{{ po.get_status_display }}</span></div>
+<div class="card"><p><b>Supplier:</b> {{ po.supplier.name }} &middot; <b>Deliver to:</b> {{ po.warehouse.name }} ({{ po.warehouse.code }})</p>
+  <p><b>Expected:</b> {{ po.expected_date|default:"-" }} &middot; <b>Total:</b> Rs {{ po.total_amount }} &middot; <b>Paid:</b> Rs {{ po.amount_paid }} &middot; <b>Balance:</b> Rs {{ po.payable_balance }}</p>{% if po.notes %}<p><b>Notes:</b> {{ po.notes }}</p>{% endif %}</div>
+{% if po.status == "ORDERED" or po.status == "PARTIAL" %}
+<form method="post" action="{% url 'inventory:po_receive' po.pk %}">{% csrf_token %}
+<div class="card"><h3>Receive Stock</h3><p class="muted">Enter the quantity received now for each line. Received stock goes into {{ po.warehouse.code }}.</p>
+  <table class="grid"><thead><tr><th>Item</th><th>Ordered</th><th>Received</th><th>Pending</th><th>Receive now</th></tr></thead><tbody>
+    {% for line in po.lines.all %}<tr><td>{{ line.item.sku }} - {{ line.item.name }}</td><td>{{ line.quantity }}</td><td>{{ line.received_qty }}</td><td>{{ line.pending_qty }}</td>
+      <td>{% if line.pending_qty > 0 %}<input class="input" style="margin:0;max-width:120px" type="number" step="0.01" min="0" max="{{ line.pending_qty }}" name="receive_{{ line.id }}" placeholder="0">{% else %}<span class="badge s-won">Complete</span>{% endif %}</td></tr>{% endfor %}</tbody></table>
+  {% if can_procure %}<div class="form-actions"><button class="btn primary" type="submit">Receive into Stock</button></div>{% endif %}</div></form>
+{% else %}
+<div class="card"><h3>Order Lines</h3><table class="grid"><thead><tr><th>Item</th><th>Qty</th><th>Unit Price</th><th>Amount</th><th>Received</th></tr></thead><tbody>
+    {% for line in po.lines.all %}<tr><td>{{ line.item.sku }} - {{ line.item.name }}</td><td>{{ line.quantity }}</td><td>Rs {{ line.unit_price }}</td><td>Rs {{ line.amount }}</td><td>{{ line.received_qty }}</td></tr>
+    {% empty %}<tr><td colspan="5" class="muted" style="text-align:center;padding:12px">No lines.</td></tr>{% endfor %}</tbody></table>
+  {% if po.status == "DRAFT" and can_procure %}<div class="form-actions"><a class="btn primary" href="{% url 'inventory:po_place' po.pk %}">Mark as Ordered</a></div>{% endif %}</div>
+{% endif %}
+{% endblock %}

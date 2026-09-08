@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ customer.customer_code }} - Solar ERP{% endblock %}
+{% block content %}
+<div class="page-head"><h1>{{ customer.customer_code }} &middot; {{ customer.name }}</h1><a class="btn" href="{% url 'customers:customer_edit' customer.pk %}">Edit</a></div>
+<div class="two-col">
+  <div class="card"><h3>Profile</h3><p><b>Phone:</b> {{ customer.phone }}</p><p><b>Email:</b> {{ customer.email|default:"-" }}</p>
+    <p><b>Address:</b> {{ customer.address|default:"-" }}</p><p><b>City/District/State:</b> {{ customer.city }}, {{ customer.district }}, {{ customer.state }} {{ customer.pincode }}</p>
+    <p><b>Manager:</b> {{ customer.account_manager.get_full_name|default:customer.account_manager.username|default:"-" }}</p>
+    {% if customer.source_lead %}<p><b>From lead:</b> <a href="{% url 'crm:lead_detail' customer.source_lead.pk %}">{{ customer.source_lead.lead_number }}</a></p>{% endif %}
+    <hr><h3>KYC</h3><p><b>GST:</b> {{ customer.gst|default:"-" }}</p><p><b>PAN:</b> {{ customer.pan|default:"-" }}</p><p><b>Aadhaar:</b> {{ customer.aadhaar|default:"-" }}</p></div>
+  <div class="card"><h3>Documents</h3>
+    <form hx-post="{% url 'customers:upload_document' customer.pk %}" hx-target="#documents" hx-swap="innerHTML" hx-encoding="multipart/form-data" hx-on::after-request="this.reset()">
+      {% csrf_token %}<div class="field">{{ doc_form.doc_type }}</div><div class="field">{{ doc_form.label }}</div><div class="row">{{ doc_form.file }}<button class="btn primary" type="submit">Upload</button></div></form>
+    <div id="documents">{% include "customers/partials/documents.html" %}</div></div>
+</div>
+<div class="two-col">
+  <div class="card"><h3>Interaction Notes</h3>
+    <form hx-post="{% url 'customers:add_note' customer.pk %}" hx-target="#notes" hx-swap="innerHTML" hx-on::after-request="this.reset()">
+      {% csrf_token %}{{ note_form.note }}<div class="form-actions"><button class="btn primary" type="submit">Add note</button></div></form>
+    <div id="notes">{% include "customers/partials/notes.html" %}</div></div>
+  <div class="card"><h3>Projects</h3>
+    <table class="grid"><thead><tr><th>Number</th><th>Capacity</th><th>Value</th><th>Stage</th></tr></thead><tbody>
+    {% for p in projects %}<tr onclick="window.location='{% url 'projects:project_detail' p.pk %}'" style="cursor:pointer">
+      <td>{{ p.project_number }}</td><td>{{ p.capacity_kw }} kW</td><td>Rs {{ p.project_value }}</td>
+      <td><span class="badge s-{{ p.stage|lower }}">{{ p.get_stage_display }}</span></td></tr>
+    {% empty %}<tr><td colspan="4" class="muted" style="text-align:center;padding:12px">No projects yet.</td></tr>{% endfor %}</tbody></table></div>
+</div>
+{% endblock %}

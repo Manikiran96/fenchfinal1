@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Projects - Solar ERP{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Projects</h1>{% if user.can_manage_projects %}<a class="btn primary" href="{% url 'projects:project_create' %}">+ New Project</a>{% endif %}</div>
+<div class="toolbar">
+  <input class="input" type="search" name="q" placeholder="Search number, customer or location..." hx-get="{% url 'projects:project_rows' %}" hx-target="#project-rows" hx-trigger="keyup changed delay:300ms" hx-include="[name='stage']">
+  <select class="input" name="stage" hx-get="{% url 'projects:project_rows' %}" hx-target="#project-rows" hx-trigger="change" hx-include="[name='q']">
+    <option value="">All stages</option>{% for value, label in stages %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
+</div>
+<table class="grid"><thead><tr><th>Number</th><th>Customer</th><th>Capacity</th><th>Value</th><th>Pending</th><th>Stage</th><th>PM</th></tr></thead>
+  <tbody id="project-rows">{% include "projects/partials/project_rows.html" %}</tbody></table>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Payables - Solar ERP{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Payables</h1></div>
+{% include "finance/_subnav.html" %}
+<div class="kpi-grid">
+  <div class="kpi kpi-red"><div class="kpi-label">Outstanding to Suppliers</div><div class="kpi-value">Rs {{ summary.outstanding|floatformat:2 }}</div></div>
+  <div class="kpi"><div class="kpi-label">Ordered Total</div><div class="kpi-value">Rs {{ summary.po_total|floatformat:2 }}</div></div>
+  <div class="kpi"><div class="kpi-label">Paid</div><div class="kpi-value">Rs {{ summary.po_paid|floatformat:2 }}</div></div>
+</div>
+<div class="card"><h3>Purchase Orders Outstanding</h3>
+  <table class="grid"><thead><tr><th>PO #</th><th>Supplier</th><th>Total</th><th>Paid</th><th>Balance</th><th>Status</th><th>Record Payment</th></tr></thead><tbody>
+    {% for po in orders_due %}<tr>
+      <td><a href="{% url 'inventory:po_detail' po.pk %}">{{ po.po_number }}</a></td><td>{{ po.supplier.name }}</td>
+      <td>Rs {{ po.total_amount }}</td><td>Rs {{ po.amount_paid }}</td><td><b>Rs {{ po.payable_balance }}</b></td>
+      <td><span class="badge s-{{ po.status|lower }}">{{ po.get_status_display }}</span></td>
+      <td><form method="post" action="{% url 'finance:pay_supplier' po.pk %}" class="row">{% csrf_token %}
+        <input class="input" style="margin:0;max-width:110px" type="number" step="0.01" name="amount" placeholder="Amount" required>
+        <button class="btn primary" style="padding:5px 10px" type="submit">Pay</button></form></td></tr>
+    {% empty %}<tr><td colspan="7" class="muted" style="text-align:center;padding:16px">No outstanding payables.</td></tr>{% endfor %}
+  </tbody></table>
+</div>
+{% endblock %}

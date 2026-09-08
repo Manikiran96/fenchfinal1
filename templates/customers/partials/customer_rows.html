@@ -1,0 +1,7 @@
+{% for c in customers %}
+<tr onclick="window.location='{% url 'customers:customer_detail' c.pk %}'" style="cursor:pointer">
+  <td>{{ c.customer_code }}</td><td>{{ c.name }}</td><td>{{ c.phone }}</td><td>{{ c.city|default:"-" }}</td>
+  <td>{{ c.account_manager.get_full_name|default:c.account_manager.username|default:"-" }}</td>
+  <td>{% if c.has_portal_access %}<span class="badge s-won">Yes</span>{% else %}<span class="badge">No</span>{% endif %}</td>
+  <td>{% if c.is_active %}<span class="badge s-won">Active</span>{% else %}<span class="badge s-lost">Inactive</span>{% endif %}</td></tr>
+{% empty %}<tr><td colspan="7" class="muted" style="text-align:center;padding:24px">No customers found.</td></tr>{% endfor %}

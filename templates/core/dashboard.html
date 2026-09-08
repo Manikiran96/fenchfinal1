@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Solar ERP{% endblock %}
+{% block content %}
+<h1>Welcome, {{ user.get_full_name|default:user.username }}</h1>
+<p class="muted">Role: {{ user.get_role_display }}{% if user.branch %} &middot; {{ user.branch }}{% endif %}</p>
+<div class="tiles">
+  {% if user.is_sales or user.is_admin_level %}<a class="tile" href="{% url 'crm:lead_list' %}"><h3>Leads / CRM</h3><p>Capture &amp; follow up on leads</p></a>{% endif %}
+  <a class="tile" href="{% url 'quotations:quotation_list' %}"><h3>Quotations</h3><p>Price, approve &amp; send</p></a>
+  <a class="tile" href="{% url 'customers:customer_list' %}"><h3>Customers</h3><p>KYC, documents &amp; history</p></a>
+  <a class="tile" href="{% url 'projects:project_list' %}"><h3>Projects</h3><p>Execution, payments &amp; geo</p></a>
+  <a class="tile" href="{% url 'inventory:item_list' %}"><h3>Inventory</h3><p>Stock, POs &amp; issue to projects</p></a>
+  <a class="tile" href="{% url 'finance:dashboard' %}"><h3>Finance</h3><p>Receivables, payables &amp; subsidy</p></a>
+  <a class="tile" href="{% url 'service:ticket_list' %}"><h3>Service</h3><p>Tickets, technicians &amp; AMC</p></a>
+</div>
+{% endblock %}

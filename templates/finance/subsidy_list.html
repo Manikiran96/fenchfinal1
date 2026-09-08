@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Subsidy - Solar ERP{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Subsidy Claims</h1><a class="btn primary" href="{% url 'finance:subsidy_create' %}">+ New Claim</a></div>
+{% include "finance/_subnav.html" %}
+<div class="kpi-grid">
+  <div class="kpi"><div class="kpi-label">Claimed</div><div class="kpi-value">Rs {{ summary.claimed|floatformat:2 }}</div></div>
+  <div class="kpi kpi-amber"><div class="kpi-label">Sanctioned</div><div class="kpi-value">Rs {{ summary.sanctioned|floatformat:2 }}</div></div>
+  <div class="kpi kpi-green"><div class="kpi-label">Disbursed</div><div class="kpi-value">Rs {{ summary.disbursed|floatformat:2 }}</div></div>
+  <div class="kpi kpi-red"><div class="kpi-label">Pending Disbursement</div><div class="kpi-value">Rs {{ summary.pending_disbursement|floatformat:2 }}</div></div>
+</div>
+<table class="grid"><thead><tr><th>Claim #</th><th>Project</th><th>Claimed</th><th>Sanctioned</th><th>Disbursed</th><th>Status</th><th></th></tr></thead><tbody>
+  {% for c in claims %}<tr>
+    <td>{{ c.claim_number }}</td><td>{{ c.project.project_number }}</td><td>Rs {{ c.claimed_amount }}</td>
+    <td>Rs {{ c.sanctioned_amount }}</td><td>Rs {{ c.disbursed_amount }}</td>
+    <td><span class="badge s-{{ c.status|lower }}">{{ c.get_status_display }}</span></td>
+    <td><a class="btn" style="padding:5px 10px" href="{% url 'finance:subsidy_edit' c.pk %}">Edit</a></td></tr>
+  {% empty %}<tr><td colspan="7" class="muted" style="text-align:center;padding:24px">No subsidy claims yet.</td></tr>{% endfor %}
+</tbody></table>
+{% endblock %}

@@ -1,0 +1,5 @@
+<table class="price-table"><tr><td>Project value</td><td>Rs {{ project.project_value }}</td></tr>
+  <tr><td>Subsidy</td><td>- Rs {{ project.subsidy_amount }}</td></tr><tr><td>Advance received</td><td>- Rs {{ project.advance_amount }}</td></tr>
+  {% for p in project.payments.all %}<tr><td>Payment {{ p.paid_on }} ({{ p.get_mode_display }})</td><td>- Rs {{ p.amount }}</td></tr>{% endfor %}
+  <tr class="total"><td>Pending amount</td><td>Rs {{ project.pending_amount }}</td></tr></table>
+<p class="muted" style="margin-top:8px">Collected so far: Rs {{ project.collected_amount }} &middot; Balance due: Rs {{ project.balance_due }}</p>

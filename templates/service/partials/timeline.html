@@ -1,0 +1,5 @@
+{% for u in ticket.updates.all %}
+<div class="timeline-item"><div class="dot"></div>
+  <div><p>{{ u.note }}{% if u.old_status and u.new_status and u.old_status != u.new_status %}<span class="badge s-{{ u.new_status|lower }}">{{ u.new_status }}</span>{% endif %}</p>
+    <small class="muted">{{ u.created_at|date:"d M Y H:i" }}{% if u.created_by %} &middot; {{ u.created_by.get_full_name|default:u.created_by.username }}{% endif %}</small></div></div>
+{% empty %}<p class="muted">No updates yet.</p>{% endfor %}

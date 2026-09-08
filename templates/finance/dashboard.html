@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Finance - Solar ERP{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Finance Dashboard</h1></div>
+{% include "finance/_subnav.html" %}
+
+<!-- Headline KPI cards -->
+<div class="kpi-grid">
+  <div class="kpi kpi-green"><div class="kpi-label">Receivables (owed to us)</div><div class="kpi-value">Rs {{ receivables.total|floatformat:2 }}</div>
+    <div class="kpi-sub">Projects Rs {{ receivables.project_pending|floatformat:0 }} &middot; AMC Rs {{ receivables.amc_pending|floatformat:0 }}</div></div>
+  <div class="kpi kpi-red"><div class="kpi-label">Payables (we owe)</div><div class="kpi-value">Rs {{ payables.outstanding|floatformat:2 }}</div>
+    <div class="kpi-sub">Ordered Rs {{ payables.po_total|floatformat:0 }} &middot; Paid Rs {{ payables.po_paid|floatformat:0 }}</div></div>
+  <div class="kpi {% if net_position >= 0 %}kpi-green{% else %}kpi-red{% endif %}"><div class="kpi-label">Net Position</div>
+    <div class="kpi-value">Rs {{ net_position|floatformat:2 }}</div><div class="kpi-sub">Receivables minus payables</div></div>
+  <div class="kpi kpi-amber"><div class="kpi-label">Net Cash (collected - spent)</div><div class="kpi-value">Rs {{ revenue.net|floatformat:2 }}</div>
+    <div class="kpi-sub">In Rs {{ revenue.collected|floatformat:0 }} &middot; Out Rs {{ revenue.spent|floatformat:0 }}</div></div>
+</div>
+
+<div class="two-col">
+  <div class="card"><h3>Cash Flow Snapshot</h3>
+    <table class="price-table">
+      <tr><td>Collected (advances + subsidy + project + AMC)</td><td>Rs {{ revenue.collected|floatformat:2 }}</td></tr>
+      <tr><td>Supplier payments</td><td>- Rs {{ revenue.po_paid|floatformat:2 }}</td></tr>
+      <tr><td>General expenses</td><td>- Rs {{ revenue.expenses|floatformat:2 }}</td></tr>
+      <tr class="total"><td>Net cash position</td><td>Rs {{ revenue.net|floatformat:2 }}</td></tr>
+    </table>
+  </div>
+  <div class="card"><h3>Subsidy Pipeline</h3>
+    <table class="price-table">
+      <tr><td>Claimed</td><td>Rs {{ subsidy.claimed|floatformat:2 }}</td></tr>
+      <tr><td>Sanctioned</td><td>Rs {{ subsidy.sanctioned|floatformat:2 }}</td></tr>
+      <tr><td>Disbursed</td><td>Rs {{ subsidy.disbursed|floatformat:2 }}</td></tr>
+      <tr class="total"><td>Pending disbursement</td><td>Rs {{ subsidy.pending_disbursement|floatformat:2 }}</td></tr>
+    </table>
+    <p class="muted" style="margin-top:8px">{{ subsidy.disbursed_count }} of {{ subsidy.count }} claims fully disbursed.</p>
+  </div>
+</div>
+
+<div class="card"><h3>Net-Metering Pipeline</h3>
+  {% if nm_counts %}
+    <div class="row" style="flex-wrap:wrap;gap:8px">
+      {% for status, count in nm_counts.items %}<span class="badge s-{{ status|lower }}">{{ status }}: {{ count }}</span>{% endfor %}
+    </div>
+  {% else %}<p class="muted">No net-metering records yet.</p>{% endif %}
+</div>
+{% endblock %}

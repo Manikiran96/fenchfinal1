@@ -1,0 +1,6 @@
+{% for p in projects %}
+<tr onclick="window.location='{% url 'projects:project_detail' p.pk %}'" style="cursor:pointer">
+  <td>{{ p.project_number }}</td><td>{{ p.customer.name }}</td><td>{{ p.capacity_kw }} kW</td><td>Rs {{ p.project_value }}</td>
+  <td>Rs {{ p.pending_amount }}</td><td><span class="badge s-{{ p.stage|lower }}">{{ p.get_stage_display }}</span></td>
+  <td>{{ p.project_manager.get_full_name|default:p.project_manager.username|default:"-" }}</td></tr>
+{% empty %}<tr><td colspan="7" class="muted" style="text-align:center;padding:24px">No projects found.</td></tr>{% endfor %}

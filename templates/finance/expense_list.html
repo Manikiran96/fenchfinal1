@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Expenses - Solar ERP{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Expenses</h1><a class="btn primary" href="{% url 'finance:expense_create' %}">+ Record Expense</a></div>
+{% include "finance/_subnav.html" %}
+<div class="kpi-grid"><div class="kpi kpi-red"><div class="kpi-label">Total Expenses</div><div class="kpi-value">Rs {{ total|floatformat:2 }}</div></div></div>
+<table class="grid"><thead><tr><th>Number</th><th>Category</th><th>Description</th><th>Project</th><th>Amount</th><th>Date</th></tr></thead><tbody>
+  {% for e in expenses %}<tr><td>{{ e.expense_number }}</td><td>{{ e.get_category_display }}</td><td>{{ e.description }}</td>
+    <td>{% if e.project %}{{ e.project.project_number }}{% else %}-{% endif %}</td><td>Rs {{ e.amount }}</td><td>{{ e.spent_on }}</td></tr>
+  {% empty %}<tr><td colspan="6" class="muted" style="text-align:center;padding:24px">No expenses recorded.</td></tr>{% endfor %}
+</tbody></table>
+{% endblock %}

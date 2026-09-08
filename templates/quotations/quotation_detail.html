@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}{{ q.quotation_number }} - Solar ERP{% endblock %}
+{% block content %}
+<div class="page-head"><h1>{{ q.quotation_number }} <span class="muted">rev {{ q.revision }}</span></h1>
+  <div class="row"><a class="btn" href="{% url 'quotations:quotation_pdf' q.pk %}" target="_blank">PDF</a>
+    {% if q.is_editable %}<a class="btn" href="{% url 'quotations:quotation_edit' q.pk %}">Edit</a>{% endif %}
+    <a class="btn" href="{% url 'quotations:quotation_revise' q.pk %}">New Revision</a></div></div>
+<div class="row" style="margin-bottom:14px"><span class="badge s-{{ q.status|lower }}">{{ q.get_status_display }}</span>
+  <span class="muted">Lead: <a href="{% url 'crm:lead_detail' q.lead.pk %}">{{ q.lead.lead_number }} &middot; {{ q.lead.customer_name }}</a></span></div>
+<div class="two-col">
+  <div class="card"><h3>System</h3><p><b>Capacity:</b> {{ q.capacity_kw }} kW</p><p><b>Panel brand:</b> {{ q.panel_brand|default:"-" }}</p>
+    <p><b>Inverter brand:</b> {{ q.inverter_brand|default:"-" }}</p>{% if q.notes %}<p><b>Notes:</b> {{ q.notes }}</p>{% endif %}
+    {% if q.items.all %}<h3 style="margin-top:14px">Line Items</h3><table class="grid"><thead><tr><th>Description</th><th>Qty</th><th>Unit</th><th>Amount</th></tr></thead><tbody>
+      {% for it in q.items.all %}<tr><td>{{ it.description }}</td><td>{{ it.quantity }}</td><td>Rs {{ it.unit_price }}</td><td>Rs {{ it.amount }}</td></tr>{% endfor %}</tbody></table>{% endif %}</div>
+  <div class="card"><h3>Pricing</h3><table class="price-table">
+    <tr><td>Material cost</td><td>Rs {{ q.material_cost }}</td></tr><tr><td>Base amount</td><td>Rs {{ q.base_amount }}</td></tr>
+    <tr><td>Tax ({{ q.tax_percent }}%)</td><td>Rs {{ q.tax_amount }}</td></tr><tr><td>Quotation value</td><td>Rs {{ q.quotation_value }}</td></tr>
+    <tr><td>Subsidy</td><td>- Rs {{ q.subsidy_amount }}</td></tr><tr class="total"><td>Final price</td><td>Rs {{ q.final_price }}</td></tr></table></div>
+</div>
+<div class="card"><h3>Approval Workflow</h3>
+  {% if q.status == "DRAFT" %}<p class="muted">Draft. Submit for a manager to approve.</p><a class="btn primary" href="{% url 'quotations:quotation_submit' q.pk %}">Submit for Approval</a>
+  {% elif q.status == "PENDING_APPROVAL" %}<p class="muted">Waiting for approval.</p>
+    {% if user.can_approve_quotation %}<div class="row"><a class="btn primary" href="{% url 'quotations:quotation_approve' q.pk %}">Approve</a></div>
+      <form method="post" action="{% url 'quotations:quotation_reject' q.pk %}" style="margin-top:10px">{% csrf_token %}{{ reject_form.reason }}<button class="btn danger" type="submit">Reject</button></form>{% endif %}
+  {% elif q.status == "APPROVED" %}<p><span class="badge s-won">Approved</span> by {{ q.approved_by.get_full_name|default:q.approved_by.username }} on {{ q.approved_at|date:"d M Y H:i" }}</p>
+    <form method="post" action="{% url 'quotations:quotation_send' q.pk %}">{% csrf_token %}<div class="field">{{ send_form.to_email }}</div><div class="field">{{ send_form.message }}</div><button class="btn primary" type="submit">Email PDF to Customer</button></form>
+    <p style="margin-top:12px"><a class="btn primary" href="{% url 'projects:project_create' %}?quotation={{ q.pk }}">Create Project from this Quotation &rarr;</a></p>
+  {% elif q.status == "REJECTED" %}<p><span class="badge s-lost">Rejected</span> {{ q.rejection_reason }}</p><a class="btn" href="{% url 'quotations:quotation_edit' q.pk %}">Edit &amp; resubmit</a>
+  {% elif q.status == "SENT" %}<p><span class="badge s-won">Sent</span> to customer on {{ q.sent_at|date:"d M Y H:i" }}</p>
+    <p style="margin-top:12px"><a class="btn primary" href="{% url 'projects:project_create' %}?quotation={{ q.pk }}">Create Project from this Quotation &rarr;</a></p>{% endif %}</div>
+{% endblock %}

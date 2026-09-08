@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - Solar ERP{% endblock %}
+{% block content %}
+<div class="page-head"><h1>{{ title }}</h1><span class="muted">Lead: {{ lead.lead_number }} &middot; {{ lead.customer_name }}</span></div>
+<form method="post">{% csrf_token %}
+  <div class="card form-grid">{% for field in form %}<div class="field"><label>{{ field.label }}</label>{{ field }}{% for e in field.errors %}<div class="err">{{ e }}</div>{% endfor %}</div>{% endfor %}</div>
+  <div class="card"><h3>Line Items <span class="muted">(optional)</span></h3>{{ formset.management_form }}
+    <table class="grid"><thead><tr><th>Description</th><th>Qty</th><th>Unit Price</th><th>Remove</th></tr></thead><tbody>
+      {% for f in formset %}<tr>{{ f.id }}<td>{{ f.description }}</td><td>{{ f.quantity }}</td><td>{{ f.unit_price }}</td><td>{% if f.instance.pk %}{{ f.DELETE }}{% endif %}</td></tr>{% endfor %}</tbody></table></div>
+  <div class="form-actions"><a class="btn" href="{% url 'crm:lead_detail' lead.pk %}">Cancel</a><button class="btn primary" type="submit">Save Quotation</button></div>
+</form>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Login - Solar ERP{% endblock %}
+{% block auth_content %}
+<div class="login-wrap"><div class="login-card">
+  <h1>&#9728; Solar ERP</h1><p class="muted">Sign in to continue</p>
+  <form method="post">{% csrf_token %}
+    {% for field in form %}<label>{{ field.label }}</label>{{ field }}{% for e in field.errors %}<div class="err">{{ e }}</div>{% endfor %}{% endfor %}
+    {% if form.non_field_errors %}<div class="err">{{ form.non_field_errors }}</div>{% endif %}
+    <button class="btn primary" type="submit">Login</button>
+  </form>
+</div></div>
+{% endblock %}

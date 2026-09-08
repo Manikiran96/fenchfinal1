@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Warehouses - Solar ERP{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Warehouses</h1>{% if user.can_manage_inventory %}<a class="btn primary" href="{% url 'inventory:warehouse_create' %}">+ New Warehouse</a>{% endif %}</div>
+{% include "inventory/_subnav.html" %}
+<table class="grid"><thead><tr><th>Code</th><th>Name</th><th>Address</th><th>Status</th></tr></thead><tbody>
+  {% for w in warehouses %}<tr><td>{{ w.code }}</td><td>{{ w.name }}</td><td>{{ w.address|default:"-" }}</td>
+    <td>{% if w.is_active %}<span class="badge s-won">Active</span>{% else %}<span class="badge s-lost">Inactive</span>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="4" class="muted" style="text-align:center;padding:24px">No warehouses yet.</td></tr>{% endfor %}</tbody></table>
+{% endblock %}

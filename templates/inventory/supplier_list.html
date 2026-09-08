@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Suppliers - Solar ERP{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Suppliers</h1>{% if user.can_procure %}<a class="btn primary" href="{% url 'inventory:supplier_create' %}">+ New Supplier</a>{% endif %}</div>
+{% include "inventory/_subnav.html" %}
+<table class="grid"><thead><tr><th>Name</th><th>Contact</th><th>Phone</th><th>GST</th><th>Status</th></tr></thead><tbody>
+  {% for s in suppliers %}<tr><td>{{ s.name }}</td><td>{{ s.contact_person|default:"-" }}</td><td>{{ s.phone|default:"-" }}</td><td>{{ s.gst|default:"-" }}</td>
+    <td>{% if s.is_active %}<span class="badge s-won">Active</span>{% else %}<span class="badge s-lost">Inactive</span>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="5" class="muted" style="text-align:center;padding:24px">No suppliers yet.</td></tr>{% endfor %}</tbody></table>
+{% endblock %}

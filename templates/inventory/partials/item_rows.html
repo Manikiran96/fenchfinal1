@@ -1,0 +1,6 @@
+{% for item in items %}
+<tr onclick="window.location='{% url 'inventory:item_detail' item.pk %}'" style="cursor:pointer">
+  <td>{{ item.sku }}</td><td>{{ item.name }}</td><td>{{ item.get_category_display }}</td><td>{{ item.brand|default:"-" }}</td>
+  <td>Rs {{ item.unit_price }}</td><td>{{ item.total_stock }} {{ item.unit }}</td><td>{{ item.reorder_level }}</td>
+  <td>{% if item.is_low_stock %}<span class="badge s-lost">Low</span>{% else %}<span class="badge s-won">OK</span>{% endif %}</td></tr>
+{% empty %}<tr><td colspan="8" class="muted" style="text-align:center;padding:24px">No items found.</td></tr>{% endfor %}

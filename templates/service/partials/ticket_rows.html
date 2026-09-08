@@ -1,0 +1,8 @@
+{% for t in tickets %}
+<tr onclick="window.location='{% url 'service:ticket_detail' t.pk %}'" style="cursor:pointer">
+  <td>{{ t.ticket_number }}</td><td>{{ t.title }}</td><td>{{ t.customer.name }}</td>
+  <td><span class="badge p-{{ t.priority|lower }}">{{ t.get_priority_display }}</span></td>
+  <td><span class="badge s-{{ t.status|lower }}">{{ t.get_status_display }}</span></td>
+  <td>{% if t.assigned_to %}{{ t.assigned_to.display_name }}{% else %}<span class="muted">Unassigned</span>{% endif %}</td>
+  <td>{% if t.is_overdue %}<span class="badge s-lost">Overdue</span>{% elif t.due_at %}{{ t.due_at|date:"d M H:i" }}{% else %}-{% endif %}</td></tr>
+{% empty %}<tr><td colspan="7" class="muted" style="text-align:center;padding:24px">No tickets found.</td></tr>{% endfor %}

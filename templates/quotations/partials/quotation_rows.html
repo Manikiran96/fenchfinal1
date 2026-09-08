@@ -1,0 +1,6 @@
+{% for q in quotations %}
+<tr onclick="window.location='{% url 'quotations:quotation_detail' q.pk %}'" style="cursor:pointer">
+  <td>{{ q.quotation_number }}</td><td>{{ q.revision }}</td><td>{{ q.lead.customer_name }}</td>
+  <td>{{ q.capacity_kw }} kW</td><td>Rs {{ q.final_price }}</td>
+  <td><span class="badge s-{{ q.status|lower }}">{{ q.get_status_display }}</span></td></tr>
+{% empty %}<tr><td colspan="6" class="muted" style="text-align:center;padding:24px">No quotations found.</td></tr>{% endfor %}

@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Customers - Solar ERP{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Customers</h1><a class="btn primary" href="{% url 'customers:customer_create' %}">+ New Customer</a></div>
+<div class="toolbar"><input class="input" type="search" name="q" placeholder="Search code, name, phone or city..." hx-get="{% url 'customers:customer_rows' %}" hx-target="#customer-rows" hx-trigger="keyup changed delay:300ms"></div>
+<table class="grid"><thead><tr><th>Code</th><th>Name</th><th>Phone</th><th>City</th><th>Manager</th><th>Portal</th><th>Status</th></tr></thead>
+  <tbody id="customer-rows">{% include "customers/partials/customer_rows.html" %}</tbody></table>
+{% endblock %}

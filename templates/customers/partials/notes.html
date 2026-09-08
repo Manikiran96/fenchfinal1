@@ -1,0 +1,4 @@
+{% for n in customer.notes.all %}
+<div class="timeline-item"><div class="dot"></div><div><p>{{ n.note }}</p>
+  <small class="muted">{{ n.created_at|date:"d M Y H:i" }}{% if n.created_by %} &middot; {{ n.created_by.get_full_name|default:n.created_by.username }}{% endif %}</small></div></div>
+{% empty %}<p class="muted">No notes yet.</p>{% endfor %}

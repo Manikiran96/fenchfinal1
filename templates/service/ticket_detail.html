@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{{ ticket.ticket_number }} - Solar ERP{% endblock %}
+{% block content %}
+<div class="page-head"><h1>{{ ticket.ticket_number }} <span class="muted">&middot; {{ ticket.title }}</span></h1>
+  <div class="row"><span class="badge p-{{ ticket.priority|lower }}">{{ ticket.get_priority_display }}</span>
+    <span class="badge s-{{ ticket.status|lower }}">{{ ticket.get_status_display }}</span>
+    {% if ticket.is_overdue %}<span class="badge s-lost">SLA Overdue</span>{% endif %}</div></div>
+<div class="two-col">
+  <div class="card"><h3>Details</h3>
+    <p><b>Customer:</b> <a href="{% url 'customers:customer_detail' ticket.customer.pk %}">{{ ticket.customer.name }}</a></p>
+    {% if ticket.project %}<p><b>Project:</b> <a href="{% url 'projects:project_detail' ticket.project.pk %}">{{ ticket.project.project_number }}</a></p>{% endif %}
+    <p><b>Category:</b> {{ ticket.get_category_display }}</p>
+    <p><b>Assigned to:</b> {% if ticket.assigned_to %}{{ ticket.assigned_to.display_name }}{% else %}<span class="muted">Unassigned</span>{% endif %}</p>
+    <p><b>SLA due:</b> {{ ticket.due_at|date:"d M Y H:i" }}</p>
+    {% if ticket.resolved_at %}<p><b>Resolved:</b> {{ ticket.resolved_at|date:"d M Y H:i" }}</p>{% endif %}
+    {% if ticket.description %}<hr><p><b>Description</b></p><p class="muted">{{ ticket.description }}</p>{% endif %}
+    {% if ticket.resolution %}<hr><p><b>Resolution</b></p><p class="muted">{{ ticket.resolution }}</p>{% endif %}</div>
+  <div class="card"><h3>Actions</h3>
+    {% if can_manage %}<h4>Assign technician</h4>
+      <form method="post" action="{% url 'service:ticket_assign' ticket.pk %}">{% csrf_token %}<div class="field">{{ assign_form.technician }}</div>{{ assign_form.note }}
+        <div class="form-actions"><button class="btn primary" type="submit">Assign</button></div></form><hr>{% endif %}
+    <h4>Change status</h4>
+    <form method="post" action="{% url 'service:ticket_status' ticket.pk %}">{% csrf_token %}<div class="field">{{ status_form.new_status }}</div>{{ status_form.resolution }}
+      <div class="form-actions"><button class="btn primary" type="submit">Update Status</button></div></form></div>
+</div>
+<div class="card"><h3>Ticket Timeline</h3>
+  <form hx-post="{% url 'service:ticket_update' ticket.pk %}" hx-target="#timeline" hx-swap="innerHTML" hx-on::after-request="this.reset()">
+    {% csrf_token %}{{ update_form.note }}<div class="form-actions"><button class="btn primary" type="submit">Add Comment</button></div></form>
+  <div id="timeline">{% include "service/partials/timeline.html" %}</div></div>
+{% endblock %}

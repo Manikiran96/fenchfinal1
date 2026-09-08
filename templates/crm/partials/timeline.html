@@ -1,0 +1,4 @@
+{% for a in lead.activities.all %}
+<div class="timeline-item"><div class="dot"></div><div><p>{{ a.note }}</p>
+  <small class="muted">{{ a.created_at|date:"d M Y H:i" }}{% if a.next_follow_up %} &middot; next: {{ a.next_follow_up }}{% endif %}</small></div></div>
+{% empty %}<p class="muted">No follow-ups yet.</p>{% endfor %}

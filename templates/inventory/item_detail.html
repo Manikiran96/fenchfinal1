@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{ item.sku }} - Solar ERP{% endblock %}
+{% block content %}
+<div class="page-head"><h1>{{ item.sku }} <span class="muted">&middot; {{ item.name }}</span></h1>{% if user.can_manage_inventory %}<a class="btn" href="{% url 'inventory:item_edit' item.pk %}">Edit</a>{% endif %}</div>
+<div class="two-col">
+  <div class="card"><h3>Details</h3><p><b>Category:</b> {{ item.get_category_display }}</p><p><b>Brand:</b> {{ item.brand|default:"-" }}</p>
+    <p><b>Unit:</b> {{ item.unit }}</p><p><b>Unit price:</b> Rs {{ item.unit_price }}</p><p><b>Reorder level:</b> {{ item.reorder_level }}</p>
+    <p><b>Total in stock:</b> {{ item.total_stock }} {{ item.unit }} {% if item.is_low_stock %}<span class="badge s-lost">Low stock</span>{% else %}<span class="badge s-won">OK</span>{% endif %}</p></div>
+  {% if can_write %}<div class="card"><h3>Actions</h3><h4>Adjust stock</h4>
+    <form hx-post="{% url 'inventory:adjust_stock' item.pk %}" hx-target="#stock-panel" hx-swap="innerHTML" hx-on::after-request="this.reset()">
+      {% csrf_token %}<div class="field"><label>Warehouse</label>{{ adjust_form.warehouse }}</div><div class="row">{{ adjust_form.quantity }}{{ adjust_form.reference }}</div>
+      <div class="form-actions"><button class="btn primary" type="submit">Apply</button></div></form>
+    <hr><h4>Issue to project</h4>
+    <form hx-post="{% url 'inventory:issue_stock' item.pk %}" hx-target="#stock-panel" hx-swap="innerHTML" hx-on::after-request="this.reset()">
+      {% csrf_token %}<input type="hidden" name="item" value="{{ item.pk }}"><div class="field"><label>Warehouse</label>{{ issue_form.warehouse }}</div>
+      <div class="field"><label>Project ID</label><input class="input" type="number" name="project" placeholder="Enter project ID" required></div>
+      <div class="row">{{ issue_form.quantity }}{{ issue_form.reference }}</div><div class="form-actions"><button class="btn primary" type="submit">Issue</button></div></form></div>{% endif %}
+</div>
+<div id="stock-panel">{% include "inventory/partials/stock_panel.html" %}</div>
+{% endblock %}

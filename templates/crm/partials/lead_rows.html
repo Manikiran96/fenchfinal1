@@ -1,0 +1,7 @@
+{% for lead in leads %}
+<tr onclick="window.location='{% url 'crm:lead_detail' lead.pk %}'" style="cursor:pointer">
+  <td>{{ lead.lead_number }}</td><td>{{ lead.customer_name }}</td><td>{{ lead.mobile }}</td>
+  <td>{% if lead.expected_capacity_kw %}{{ lead.expected_capacity_kw }} kW{% else %}-{% endif %}</td>
+  <td><span class="badge s-{{ lead.status|lower }}">{{ lead.get_status_display }}</span></td>
+  <td>{{ lead.assigned_to.get_full_name|default:lead.assigned_to.username|default:"-" }}</td></tr>
+{% empty %}<tr><td colspan="6" class="muted" style="text-align:center;padding:24px">No leads found.</td></tr>{% endfor %}

@@ -1,0 +1,6 @@
+{% for d in customer.documents.all %}
+<div class="doc-item"><div><b>{{ d.get_doc_type_display }}</b>{% if d.label %}<span class="muted"> &middot; {{ d.label }}</span>{% endif %}
+  <br><small class="muted">{{ d.created_at|date:"d M Y H:i" }}</small></div>
+  <div class="row"><a class="btn" href="{{ d.file.url }}" target="_blank">View</a>
+    <button class="btn danger" hx-post="{% url 'customers:delete_document' d.id %}" hx-target="#documents" hx-swap="innerHTML" hx-confirm="Delete this document?">Delete</button></div></div>
+{% empty %}<p class="muted">No documents uploaded yet.</p>{% endfor %}

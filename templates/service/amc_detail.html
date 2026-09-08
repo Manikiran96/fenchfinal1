@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ amc.contract_number }} - Solar ERP{% endblock %}
+{% block content %}
+<div class="page-head"><h1>{{ amc.contract_number }} <span class="muted">&middot; {{ amc.customer.name }}</span></h1>
+  <div class="row">{% if amc.is_active %}<span class="badge s-won">Active</span>{% else %}<span class="badge">{{ amc.get_status_display }}</span>{% endif %}
+    {% if amc.is_expiring_soon %}<span class="badge s-lost">Expiring soon</span>{% endif %}</div></div>
+<div class="two-col">
+  <div class="card"><h3>Contract</h3>
+    <p><b>Customer:</b> <a href="{% url 'customers:customer_detail' amc.customer.pk %}">{{ amc.customer.name }}</a></p>
+    {% if amc.project %}<p><b>Project:</b> <a href="{% url 'projects:project_detail' amc.project.pk %}">{{ amc.project.project_number }}</a></p>{% endif %}
+    <p><b>Period:</b> {{ amc.start_date }} &rarr; {{ amc.end_date }}</p><p><b>Amount:</b> Rs {{ amc.amount }} &middot; <b>Paid:</b> Rs {{ amc.amount_paid }} &middot; <b>Balance:</b> Rs {{ amc.amc_balance }}</p>
+    <p><b>Visits/year:</b> {{ amc.visits_per_year }}</p><p><b>Completed:</b> {{ amc.visits_done }} / {{ amc.visits.count }}</p>
+    {% if amc.notes %}<hr><p class="muted">{{ amc.notes }}</p>{% endif %}</div>
+  <div class="card"><h3>Tickets from this AMC</h3>
+    <table class="grid"><thead><tr><th>Ticket</th><th>Status</th></tr></thead><tbody>
+      {% for t in amc.tickets.all %}<tr onclick="window.location='{% url 'service:ticket_detail' t.pk %}'" style="cursor:pointer">
+        <td>{{ t.ticket_number }}</td><td><span class="badge s-{{ t.status|lower }}">{{ t.get_status_display }}</span></td></tr>
+      {% empty %}<tr><td colspan="2" class="muted" style="text-align:center;padding:12px">No linked tickets.</td></tr>{% endfor %}</tbody></table></div>
+</div>
+<div class="card"><div class="row" style="justify-content:space-between"><h3>Scheduled Visits</h3>
+  {% if can_manage %}<a class="btn" href="{% url 'service:amc_generate_visits' amc.pk %}">Regenerate Visits</a>{% endif %}</div>
+  <table class="grid"><thead><tr><th>Scheduled</th><th>Technician</th><th>Status</th><th>Done On</th><th>Action</th></tr></thead><tbody>
+    {% for v in amc.visits.all %}<tr>
+      <td>{{ v.scheduled_date }}{% if v.is_overdue %} <span class="badge s-lost">Overdue</span>{% endif %}</td>
+      <td>{{ v.technician.display_name|default:"-" }}</td>
+      <td>{% if v.is_done %}<span class="badge s-won">Done</span>{% else %}<span class="badge s-open">Pending</span>{% endif %}</td>
+      <td>{{ v.done_on|default:"-" }}</td>
+      <td>{% if not v.is_done and can_manage %}
+        <form method="post" action="{% url 'service:amc_complete_visit' v.id %}" class="row">{% csrf_token %}{{ visit_form.technician }}<button class="btn primary" style="padding:5px 10px" type="submit">Complete</button></form>
+        {% elif v.remarks %}<span class="muted">{{ v.remarks }}</span>{% else %}-{% endif %}</td></tr>
+    {% empty %}<tr><td colspan="5" class="muted" style="text-align:center;padding:12px">No visits scheduled.</td></tr>{% endfor %}</tbody></table>
+</div>
+{% endblock %}

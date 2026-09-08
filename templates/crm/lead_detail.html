@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ lead.lead_number }} - Solar ERP{% endblock %}
+{% block content %}
+<div class="page-head"><h1>{{ lead.lead_number }} &middot; {{ lead.customer_name }}</h1>
+  <div class="row"><a class="btn primary" href="{% url 'quotations:quotation_create' lead.pk %}">+ Quotation</a><a class="btn" href="{% url 'crm:lead_edit' lead.pk %}">Edit</a></div></div>
+<div class="two-col">
+  <div class="card"><h3>Details</h3><p><b>Mobile:</b> {{ lead.mobile }}</p><p><b>Email:</b> {{ lead.email|default:"-" }}</p>
+    <p><b>City/State:</b> {{ lead.city }}, {{ lead.state }}</p><p><b>Source:</b> {{ lead.get_source_display }}</p>
+    <p><b>Expected capacity:</b> {{ lead.expected_capacity_kw|default:"-" }} kW</p>
+    <p><b>Status:</b> <span class="badge s-{{ lead.status|lower }}">{{ lead.get_status_display }}</span></p>
+    {% if lead.is_converted %}<p><span class="badge s-won">Converted to customer</span></p>{% endif %}</div>
+  <div class="card"><h3>Follow-up Timeline</h3>
+    <form hx-post="{% url 'crm:add_activity' lead.pk %}" hx-target="#timeline" hx-swap="innerHTML" hx-on::after-request="this.reset()">
+      {% csrf_token %}{{ activity_form.note }}<div class="row">{{ activity_form.next_follow_up }}<button class="btn primary" type="submit">Add note</button></div></form>
+    <div id="timeline">{% include "crm/partials/timeline.html" %}</div></div>
+</div>
+<div class="card"><h3>Quotations</h3>
+  <table class="grid"><thead><tr><th>Number</th><th>Rev</th><th>Capacity</th><th>Final Price</th><th>Status</th></tr></thead><tbody>
+    {% for q in quotations %}<tr onclick="window.location='{% url 'quotations:quotation_detail' q.pk %}'" style="cursor:pointer">
+      <td>{{ q.quotation_number }}</td><td>{{ q.revision }}</td><td>{{ q.capacity_kw }} kW</td><td>Rs {{ q.final_price }}</td>
+      <td><span class="badge s-{{ q.status|lower }}">{{ q.get_status_display }}</span></td></tr>
+    {% empty %}<tr><td colspan="5" class="muted" style="text-align:center;padding:16px">No quotations yet.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

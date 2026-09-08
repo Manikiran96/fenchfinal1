@@ -1,0 +1,11 @@
+{% if error %}<div class="msg" style="background:rgba(239,68,68,.15);color:#f87171">&#9888; {{ error }}</div>{% endif %}
+<div class="two-col">
+  <div class="card"><h3>Stock by Warehouse</h3><table class="grid"><thead><tr><th>Warehouse</th><th>Quantity</th></tr></thead><tbody>
+    {% for s in stocks %}<tr><td>{{ s.warehouse.name }} ({{ s.warehouse.code }})</td><td>{{ s.quantity }} {{ item.unit }}</td></tr>
+    {% empty %}<tr><td colspan="2" class="muted" style="text-align:center;padding:12px">No stock yet.</td></tr>{% endfor %}</tbody></table></div>
+  <div class="card"><h3>Movement Ledger</h3><table class="grid"><thead><tr><th>Date</th><th>Type</th><th>Qty</th><th>Balance</th><th>Ref</th></tr></thead><tbody>
+    {% for mv in movements %}<tr><td>{{ mv.created_at|date:"d M H:i" }}</td><td><span class="badge s-{{ mv.movement_type|lower }}">{{ mv.get_movement_type_display }}</span></td>
+      <td>{{ mv.quantity }}</td><td>{{ mv.balance_after }}</td>
+      <td>{% if mv.project %}<a href="{% url 'projects:project_detail' mv.project.pk %}">{{ mv.project.project_number }}</a>{% else %}{{ mv.reference|default:"-" }}{% endif %}</td></tr>
+    {% empty %}<tr><td colspan="5" class="muted" style="text-align:center;padding:12px">No movements yet.</td></tr>{% endfor %}</tbody></table></div>
+</div>

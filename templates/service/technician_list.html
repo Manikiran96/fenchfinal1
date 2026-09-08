@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Technicians - Solar ERP{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Technicians</h1>{% if user.can_manage_service %}<a class="btn primary" href="{% url 'service:technician_create' %}">+ New Technician</a>{% endif %}</div>
+{% include "service/_subnav.html" %}
+<table class="grid"><thead><tr><th>Code</th><th>Name</th><th>Phone</th><th>Skills</th><th>Open Tickets</th><th>Available</th></tr></thead><tbody>
+  {% for t in technicians %}<tr><td>{{ t.employee_code }}</td><td>{{ t.display_name }}</td><td>{{ t.phone|default:"-" }}</td>
+    <td>{{ t.skills|default:"-" }}</td><td>{{ t.open_ticket_count }}</td>
+    <td>{% if t.is_available %}<span class="badge s-won">Yes</span>{% else %}<span class="badge s-lost">No</span>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="6" class="muted" style="text-align:center;padding:24px">No technicians yet.</td></tr>{% endfor %}</tbody></table>
+{% endblock %}

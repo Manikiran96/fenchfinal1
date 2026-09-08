@@ -1,0 +1,7 @@
+{% for m in project.milestones.all %}
+<div class="timeline-item"><div class="dot" {% if m.is_done %}style="background:#22c55e"{% endif %}></div>
+  <div><p><b>{{ m.title }}</b> <span class="badge s-{{ m.stage|lower }}">{{ m.get_stage_display }}</span>
+    {% if m.is_done %}<span class="badge s-won">Done{% if m.done_on %} {{ m.done_on }}{% endif %}</span>{% endif %}</p>
+    {% if m.note %}<p class="muted">{{ m.note }}</p>{% endif %}
+    <small class="muted">{{ m.created_at|date:"d M Y H:i" }}{% if m.created_by %} &middot; {{ m.created_by.get_full_name|default:m.created_by.username }}{% endif %}</small></div></div>
+{% empty %}<p class="muted">No milestones yet.</p>{% endfor %}

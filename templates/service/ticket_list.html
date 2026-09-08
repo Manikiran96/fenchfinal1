@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Service Tickets - Solar ERP{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Service Tickets</h1>{% if user.can_manage_service %}<a class="btn primary" href="{% url 'service:ticket_create' %}">+ New Ticket</a>{% endif %}</div>
+{% include "service/_subnav.html" %}
+<div class="toolbar">
+  <input class="input" type="search" name="q" placeholder="Search number, title or customer..." hx-get="{% url 'service:ticket_rows' %}" hx-target="#ticket-rows" hx-trigger="keyup changed delay:300ms" hx-include="[name='status'],[name='priority']">
+  <select class="input" name="status" hx-get="{% url 'service:ticket_rows' %}" hx-target="#ticket-rows" hx-trigger="change" hx-include="[name='q'],[name='priority']">
+    <option value="">All statuses</option>{% for value, label in statuses %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
+  <select class="input" name="priority" hx-get="{% url 'service:ticket_rows' %}" hx-target="#ticket-rows" hx-trigger="change" hx-include="[name='q'],[name='status']">
+    <option value="">All priorities</option>{% for value, label in priorities %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
+</div>
+<table class="grid"><thead><tr><th>Ticket #</th><th>Title</th><th>Customer</th><th>Priority</th><th>Status</th><th>Assigned</th><th>SLA</th></tr></thead>
+  <tbody id="ticket-rows">{% include "service/partials/ticket_rows.html" %}</tbody></table>
+{% endblock %}
