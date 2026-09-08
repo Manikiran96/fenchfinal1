@@ -1,0 +1,19 @@
+{% for d in project.documents.all %}
+<div class="doc-item">
+  <div>
+    <b>{{ d.title }}</b> <span class="badge">{{ d.get_category_display }}</span>
+    <br><small class="muted">{{ d.filename }} · {{ d.created_at|date:"d M Y H:i" }}
+      {% if d.uploaded_by %}· by {{ d.uploaded_by.get_full_name|default:d.uploaded_by.username }}{% endif %}</small>
+  </div>
+  <div class="row">
+    <a class="btn" href="{{ d.file.url }}" target="_blank">View</a>
+    <a class="btn" href="{% url 'projects:document_download' d.id %}">Download</a>
+    {% if can_write %}
+    <button class="btn danger" hx-post="{% url 'projects:document_delete' d.id %}"
+            hx-target="#documents" hx-swap="innerHTML" hx-confirm="Delete this document?">Delete</button>
+    {% endif %}
+  </div>
+</div>
+{% empty %}
+<p class="muted">No documents uploaded yet.</p>
+{% endfor %}

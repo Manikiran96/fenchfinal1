@@ -1,0 +1,2 @@
+python manage.py makemigrations portal projects
+python manage.py migrate

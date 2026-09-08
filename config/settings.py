@@ -24,7 +24,9 @@ LOCAL_APPS = [
     "apps.projects",      # Module 5: Project management
     "apps.inventory",     # Module 6: Inventory / Procurement / Warehouse
     "apps.service",       # Module 7: Technicians, service tickets, AMC
-    "apps.finance",       # Module 8: Finance — receivables/payables/subsidy/net-metering
+    "apps.finance",       #Module 8: Finance — receivables/payables/subsidy/net-metering
+    "apps.portal",   
+    "apps.audit",     
     "apps.core",          # Shared base models, mixins, utilities
 ]
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

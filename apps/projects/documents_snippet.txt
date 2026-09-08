@@ -1,0 +1,46 @@
+# ============================================================================
+# ADD THIS to the END of apps/projects/models.py
+# ============================================================================
+# (imports needed at top of models.py — already present there:
+#   from django.conf import settings
+#   from django.db import models
+#   from apps.core.models import TimeStampedModel )
+
+
+class ProjectDocumentCategory(models.TextChoices):
+    AGREEMENT = "AGREEMENT", "Agreement / Contract"
+    DESIGN = "DESIGN", "Design / Drawing"
+    APPROVAL = "APPROVAL", "Govt Approval"
+    SUBSIDY = "SUBSIDY", "Subsidy Papers"
+    INVOICE = "INVOICE", "Invoice / Bill"
+    SITE_PHOTO = "SITE_PHOTO", "Site Photo"
+    HANDOVER = "HANDOVER", "Handover Document"
+    OTHER = "OTHER", "Other"
+
+
+class ProjectDocument(TimeStampedModel):
+    """A file stored against a project. Supports view / download / delete."""
+    project = models.ForeignKey(
+        "projects.Project", on_delete=models.CASCADE, related_name="documents"
+    )
+    category = models.CharField(
+        max_length=20, choices=ProjectDocumentCategory.choices,
+        default=ProjectDocumentCategory.OTHER,
+    )
+    title = models.CharField(max_length=160)
+    file = models.FileField(upload_to="projects/documents/")
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name="uploaded_project_docs",
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.title} ({self.project.project_number})"
+
+    @property
+    def filename(self):
+        import os
+        return os.path.basename(self.file.name)

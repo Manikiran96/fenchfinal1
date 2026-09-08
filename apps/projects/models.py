@@ -3,6 +3,7 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 from apps.core.models import TimeStampedModel
+from apps.audit.mixins import AuditableModel
 
 
 class ProjectType(models.TextChoices):
@@ -29,7 +30,8 @@ class ProjectStage(models.TextChoices):
     CLOSED = "CLOSED", "Closed"
 
 
-class Project(TimeStampedModel):
+class Project(AuditableModel,TimeStampedModel):
+    AUDIT_MODULE = "projects"
     project_number = models.CharField(max_length=25, unique=True, editable=False)
     customer = models.ForeignKey("customers.Customer", on_delete=models.PROTECT, related_name="projects")
     quotation = models.ForeignKey("quotations.Quotation", null=True, blank=True, on_delete=models.SET_NULL, related_name="projects")
@@ -45,6 +47,7 @@ class Project(TimeStampedModel):
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     stage = models.CharField(max_length=20, choices=ProjectStage.choices, default=ProjectStage.REGISTERED)
     project_manager = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="managed_projects")
+    technicians = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name="field_projects",limit_choices_to={"role": "TECHNICIAN"},)
     expected_completion = models.DateField(null=True, blank=True)
     commissioned_on = models.DateField(null=True, blank=True)
 
@@ -118,3 +121,40 @@ class ProjectPayment(TimeStampedModel):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         self.project.save(update_fields=["pending_amount"])
+class ProjectDocumentCategory(models.TextChoices):
+    AGREEMENT = "AGREEMENT", "Agreement / Contract"
+    DESIGN = "DESIGN", "Design / Drawing"
+    APPROVAL = "APPROVAL", "Govt Approval"
+    SUBSIDY = "SUBSIDY", "Subsidy Papers"
+    INVOICE = "INVOICE", "Invoice / Bill"
+    SITE_PHOTO = "SITE_PHOTO", "Site Photo"
+    HANDOVER = "HANDOVER", "Handover Document"
+    OTHER = "OTHER", "Other"
+
+
+class ProjectDocument(TimeStampedModel):
+    """A file stored against a project. Supports view / download / delete."""
+    project = models.ForeignKey(
+        "projects.Project", on_delete=models.CASCADE, related_name="documents"
+    )
+    category = models.CharField(
+        max_length=20, choices=ProjectDocumentCategory.choices,
+        default=ProjectDocumentCategory.OTHER,
+    )
+    title = models.CharField(max_length=160)
+    file = models.FileField(upload_to="projects/documents/")
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name="uploaded_project_docs",
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.title} ({self.project.project_number})"
+
+    @property
+    def filename(self):
+        import os
+        return os.path.basename(self.file.name)

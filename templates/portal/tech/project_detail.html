@@ -1,0 +1,28 @@
+{% extends "portal/base_mobile.html" %}
+{% block title %}{{ project.project_number }}{% endblock %}{% block header %}{{ project.project_number }}{% endblock %}
+{% block content %}
+<div class="p-detail">
+  <h2>{{ project.customer.name }}</h2>
+  <p><a class="p-call" href="tel:{{ project.customer.phone }}">📞 {{ project.customer.phone }}</a></p>
+  <p><small>{{ project.capacity_kw }} kW · {{ project.get_project_type_display }}</small></p>
+  {% if project.location %}<p><small>📍 {{ project.location }}</small></p>{% endif %}
+  {% if project.latitude and project.longitude %}
+    <a class="p-btn p-btn-sec" target="_blank" href="https://www.google.com/maps?q={{ project.latitude }},{{ project.longitude }}">🗺️ Open in Maps</a>{% endif %}
+  <span class="p-badge s-{{ project.stage|lower }}">{{ project.get_stage_display }}</span>
+</div>
+
+<a class="p-btn" href="{% url 'portal:tech_stage_update' project.pk %}">➕ Post Work Update</a>
+
+<h3 class="p-h3">Work updates</h3>
+{% for u in updates %}
+<div class="p-update">
+  <div class="p-update-head"><b>{{ u.get_stage_display }}</b>
+    {% if u.is_done %}<span class="p-badge s-won">Done</span>{% endif %}
+    <small>{{ u.created_at|date:"d M, H:i" }}</small></div>
+  {% if u.note %}<p>{{ u.note }}</p>{% endif %}
+  {% if u.photos.all %}<div class="p-photos">{% for ph in u.photos.all %}<a href="{{ ph.image.url }}" target="_blank"><img src="{{ ph.image.url }}" alt="site photo"></a>{% endfor %}</div>{% endif %}
+  <small class="p-muted">by {{ u.technician.get_full_name|default:u.technician.username }}</small>
+</div>
+{% empty %}<p class="p-empty">No updates yet. Tap “Post Work Update”.</p>{% endfor %}
+{% endblock %}
+{% block nav %}{% include "portal/_tech_nav.html" %}{% endblock %}

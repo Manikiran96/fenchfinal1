@@ -10,4 +10,7 @@ urlpatterns = [
     path("<int:pk>/edit/", views.project_edit, name="project_edit"),
     path("<int:pk>/milestone/", views.add_milestone, name="add_milestone"),
     path("<int:pk>/payment/", views.add_payment, name="add_payment"),
+    path("<int:pk>/documents/upload/", views.document_upload, name="document_upload"),
+    path("documents/<int:doc_id>/download/", views.document_download, name="document_download"),
+    path("documents/<int:doc_id>/delete/", views.document_delete, name="document_delete"),
 ]

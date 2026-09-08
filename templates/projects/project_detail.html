@@ -25,4 +25,22 @@
       <div class="field"><label>Note</label>{{ milestone_form.note }}</div><div class="field"><label>Done?</label><div class="row">{{ milestone_form.is_done }} {{ milestone_form.done_on }}</div></div></div>
     <div class="form-actions"><button class="btn primary" type="submit">Add Milestone</button></div></form>{% endif %}
   <div id="milestones">{% include "projects/partials/milestones.html" %}</div></div>
-{% endblock %}
+<div class="card">
+  <h3>📁 Documents</h3>
+  {% if can_write %}
+  <form hx-post="{% url 'projects:document_upload' project.pk %}"
+        hx-target="#documents" hx-swap="innerHTML"
+        hx-encoding="multipart/form-data" hx-on::after-request="this.reset()">
+    {% csrf_token %}
+    <div class="form-grid">
+      <div class="field"><label>Category</label>{{ doc_form.category }}</div>
+      <div class="field"><label>Title</label>{{ doc_form.title }}</div>
+      <div class="field"><label>File</label>{{ doc_form.file }}</div>
+    </div>
+    <div class="form-actions"><button class="btn primary" type="submit">Upload</button></div>
+  </form>
+  {% endif %}
+  <div id="documents">{% include "projects/partials/documents.html" %}</div>
+</div>
+
+  {% endblock %}

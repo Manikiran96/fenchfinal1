@@ -1,0 +1,12 @@
+{% extends "portal/base_mobile.html" %}
+{% block title %}Projects{% endblock %}{% block header %}My Projects{% endblock %}
+{% block content %}
+<form method="get" class="p-search"><input class="pinput" type="search" name="q" value="{{ q }}" placeholder="Search customer or location..."></form>
+{% for p in projects %}
+<a class="p-row" href="{% url 'portal:tech_project_detail' p.pk %}">
+  <div><b>{{ p.customer.name }}</b><br><small>{{ p.project_number }} · {{ p.capacity_kw }} kW</small></div>
+  <span class="p-badge s-{{ p.stage|lower }}">{{ p.get_stage_display }}</span>
+</a>
+{% empty %}<p class="p-empty">No projects found.</p>{% endfor %}
+{% endblock %}
+{% block nav %}{% include "portal/_tech_nav.html" %}{% endblock %}

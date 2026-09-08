@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Project, ProjectMilestone, ProjectPayment
-
+from .models import ProjectDocument
 
 class MilestoneInline(admin.TabularInline):
     model = ProjectMilestone
@@ -22,3 +22,4 @@ class ProjectAdmin(admin.ModelAdmin):
 
 admin.site.register(ProjectMilestone)
 admin.site.register(ProjectPayment)
+admin.site.register(ProjectDocument)

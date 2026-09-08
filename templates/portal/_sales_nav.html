@@ -1,0 +1,4 @@
+<a href="{% url 'portal:sales_dashboard' %}" class="p-nav-item">🏠<span>Home</span></a>
+<a href="{% url 'portal:sales_lead_list' %}" class="p-nav-item">📋<span>Leads</span></a>
+<a href="{% url 'portal:sales_lead_create' %}" class="p-nav-item p-nav-add">➕<span>New</span></a>
+{% if user.is_admin_level or user.role == 'SALES_MANAGER' %}<a href="{% url 'portal:sales_today_admin' %}" class="p-nav-item">📊<span>Today</span></a>{% endif %}
