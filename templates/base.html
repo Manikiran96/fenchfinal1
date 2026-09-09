@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Solar ERP{% endblock %}</title>
+    <title>{% block title %}Finch Power{% endblock %}</title>
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
     <link rel="stylesheet" href="{% static 'css/app.css' %}">
     <meta name="csrf-token" content="{{ csrf_token }}">
@@ -20,7 +20,7 @@
 {% if user.is_authenticated %}
 <div class="layout">
     <aside class="sidebar">
-        <div class="brand">&#9728; Solar ERP</div>
+        <div class="brand">&#9728; Finch Power</div>
         <nav>
             <a href="{% url 'core:dashboard' %}">Dashboard</a>
             {% if user.is_sales or user.is_admin_level %}<a href="{% url 'crm:lead_list' %}">Leads / CRM</a>{% endif %}

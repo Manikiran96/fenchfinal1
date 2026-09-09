@@ -1,7 +1,8 @@
 """Django settings for the Solar ERP modular monolith."""
-from pathlib import Path
-from datetime import timedelta
 import os
+from datetime import timedelta
+from pathlib import Path
+
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -54,15 +55,21 @@ TEMPLATES = [{
     ]},
 }]
 WSGI_APPLICATION = "config.wsgi.application"
+#DATABASES = {"default": {
+#    "ENGINE": "django.db.backends.postgresql",
+#   "NAME": os.getenv("POSTGRES_DB", "solar_erp"),
+#    "USER": os.getenv("POSTGRES_USER", "solar"),
+#    "PASSWORD": os.getenv("POSTGRES_PASSWORD", "solar_pass"),
+#    "HOST": os.getenv("POSTGRES_HOST", "localhost"),
+#    "PORT": os.getenv("POSTGRES_PORT", "5432"),
+#}}
 
-DATABASES = {"default": {
-    "ENGINE": "django.db.backends.postgresql",
-    "NAME": os.getenv("POSTGRES_DB", "solar_erp"),
-    "USER": os.getenv("POSTGRES_USER", "solar"),
-    "PASSWORD": os.getenv("POSTGRES_PASSWORD", "solar_pass"),
-    "HOST": os.getenv("POSTGRES_HOST", "localhost"),
-    "PORT": os.getenv("POSTGRES_PORT", "5432"),
-}}
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 
 AUTH_USER_MODEL = "accounts.User"
 LOGIN_URL = "accounts:login"
@@ -115,10 +122,10 @@ MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 COMPANY = {
-    "name": "SunVolt Solar EPC Pvt. Ltd.",
-    "address": "Plot 12, Solar Park Road, Hyderabad, Telangana 500032",
-    "phone": "+91 40 1234 5678",
-    "email": "sales@sunvolt.example",
-    "gstin": "36ABCDE1234F1Z5",
+    "name": " Finch Solar Power pvt. ltd.",
+    "address": "#21-4-10 Tanukuvaari Street, Old Police Station St, Tanuku, Andhra Pradesh 534211, India",
+    "phone": "+91 99483 73373",
+    "email": "swaroop@finchpower.in",
+    "gstin": "000000000000",
 }
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
