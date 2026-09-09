@@ -1,0 +1,17 @@
+{% extends "portal/base_mobile.html" %}
+{% block title %}My Work{% endblock %}{% block header %}Hi, {{ user.first_name|default:user.username }}{% endblock %}
+{% block content %}
+<div class="p-cards">
+  <div class="p-card"><div class="p-num">{{ stats.active }}</div><div class="p-lbl">Active projects</div></div>
+  <div class="p-card"><div class="p-num">{{ stats.total }}</div><div class="p-lbl">Total assigned</div></div>
+  <div class="p-card"><div class="p-num p-good">{{ stats.updates_today }}</div><div class="p-lbl">Updates today</div></div>
+</div>
+<h3 class="p-h3">My projects</h3>
+{% for p in projects %}
+<a class="p-row" href="{% url 'portal:tech_project_detail' p.pk %}">
+  <div><b>{{ p.customer.name }}</b><br><small>{{ p.project_number }} · {{ p.capacity_kw }} kW{% if p.location %} · {{ p.location }}{% endif %}</small></div>
+  <span class="p-badge s-{{ p.stage|lower }}">{{ p.get_stage_display }}</span>
+</a>
+{% empty %}<p class="p-empty">No projects assigned yet.</p>{% endfor %}
+{% endblock %}
+{% block nav %}{% include "portal/_tech_nav.html" %}{% endblock %}

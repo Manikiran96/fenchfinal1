@@ -14,6 +14,8 @@ urlpatterns = [
     path("inventory/", include("apps.inventory.urls")),
     path("service/", include("apps.service.urls")),
     path("finance/", include("apps.finance.urls")),
+    path("portal/", include("apps.portal.urls")),
+    path("audit/", include("apps.audit.urls")),
     path("api/auth/", include("apps.accounts.api_urls")),
 ]
 if settings.DEBUG:

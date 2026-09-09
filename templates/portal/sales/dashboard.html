@@ -1,0 +1,27 @@
+{% extends "portal/base_mobile.html" %}
+{% block title %}Sales{% endblock %}{% block header %}Hi, {{ user.first_name|default:user.username }}{% endblock %}
+{% block content %}
+<div class="p-cards">
+  <div class="p-card"><div class="p-num">{{ stats.today_created }}</div><div class="p-lbl">New today</div></div>
+  <div class="p-card"><div class="p-num">{{ stats.open }}</div><div class="p-lbl">Open leads</div></div>
+  <div class="p-card"><div class="p-num p-warn">{{ stats.due_count }}</div><div class="p-lbl">Follow-ups due</div></div>
+  <div class="p-card"><div class="p-num p-good">{{ stats.won }}</div><div class="p-lbl">Won</div></div>
+</div>
+
+<h3 class="p-h3">⏰ Follow-ups due</h3>
+{% for a in due %}
+<a class="p-row" href="{% url 'portal:sales_lead_detail' a.lead.pk %}">
+  <div><b>{{ a.lead.customer_name }}</b><br><small>{{ a.lead.mobile }} · due {{ a.next_follow_up }}</small></div>
+  <span class="p-badge s-{{ a.lead.status|lower }}">{{ a.lead.get_status_display }}</span>
+</a>
+{% empty %}<p class="p-empty">🎉 No follow-ups pending.</p>{% endfor %}
+
+<h3 class="p-h3">Recent leads</h3>
+{% for lead in recent %}
+<a class="p-row" href="{% url 'portal:sales_lead_detail' lead.pk %}">
+  <div><b>{{ lead.customer_name }}</b><br><small>{{ lead.lead_number }} · {{ lead.mobile }}</small></div>
+  <span class="p-badge s-{{ lead.status|lower }}">{{ lead.get_status_display }}</span>
+</a>
+{% empty %}<p class="p-empty">No leads yet. Tap ➕ New.</p>{% endfor %}
+{% endblock %}
+{% block nav %}{% include "portal/_sales_nav.html" %}{% endblock %}

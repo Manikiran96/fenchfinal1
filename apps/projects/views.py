@@ -1,16 +1,20 @@
 """Project Management views (Module 5)."""
+from apps.accounts.models import Role
+from apps.accounts.permissions import role_required
+from apps.audit.mixins import *
+from apps.quotations.models import Quotation
+from django import forms
 from django.contrib import messages
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils import timezone
-from apps.accounts.permissions import role_required
-from apps.accounts.models import Role
-from apps.quotations.models import Quotation
-from .models import Project, ProjectStage
-from .forms import ProjectCreateForm, ProjectUpdateForm, MilestoneForm, PaymentForm
+
 from . import services
+from .forms import (MilestoneForm, PaymentForm, ProjectCreateForm,
+                    ProjectDocumentForm, ProjectUpdateForm)
+from .models import Project, ProjectDocument, ProjectStage
 
 PROJECT_ROLES = (Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.PROJECT_MANAGER, Role.ACCOUNTS)
 PROJECT_WRITE_ROLES = (Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.PROJECT_MANAGER)
@@ -73,7 +77,7 @@ def project_create(request):
 @role_required(*PROJECT_ROLES)
 def project_detail(request, pk):
     project = get_object_or_404(_visible_projects(request.user), pk=pk)
-    return render(request, "projects/project_detail.html", {"project": project, "milestone_form": MilestoneForm(),
+    return render(request, "projects/project_detail.html", {"project": project, "milestone_form": MilestoneForm(),"doc_form": ProjectDocumentForm(),
         "payment_form": PaymentForm(initial={"paid_on": timezone.now().date()}), "can_write": request.user.can_manage_projects})
 
 
@@ -85,6 +89,10 @@ def project_edit(request, pk):
         proj = form.save(commit=False)
         if proj.stage == ProjectStage.COMMISSIONED and not proj.commissioned_on:
             proj.commissioned_on = timezone.now().date()
+            proj = form.save(commit=False)
+        proj._audit_user = request.user          # 👈 records WHO edited
+        if proj.stage == ProjectStage.COMMISSIONED and not proj.commissioned_on:
+            proj.commissioned_on = timezone.now().date()    
         proj.save()
         messages.success(request, "Project updated.")
         return redirect("projects:project_detail", pk=project.pk)
@@ -117,4 +125,46 @@ def add_payment(request, pk):
         p.save()
     project.refresh_from_db()
     html = render_to_string("projects/partials/finance.html", {"project": project}, request=request)
+    return HttpResponse(html)
+
+
+# --------------------------- Documents tab views ---------------------------
+@role_required(*PROJECT_ROLES)
+def document_upload(request, pk):
+    """HTMX: upload a file to the project, return refreshed document list."""
+    project = get_object_or_404(_visible_projects(request.user), pk=pk)
+    form = ProjectDocumentForm(request.POST, request.FILES)
+    if form.is_valid():
+        doc = form.save(commit=False)
+        doc.project = project
+        doc.uploaded_by = request.user
+        doc.created_by = request.user
+        doc.save()
+        # Manual audit: file uploads are a CREATE in the "projects" module.
+        audit.log_create(module="projects", instance=doc, user=request.user)
+    html = render_to_string("projects/partials/documents.html",
+                            {"project": project}, request=request)
+    return HttpResponse(html)
+
+
+@role_required(*PROJECT_ROLES)
+def document_download(request, doc_id):
+    """Force-download a project document."""
+    doc = get_object_or_404(ProjectDocument, pk=doc_id)
+    # (optional) scope-check: ensure the user can see this project
+    get_object_or_404(_visible_projects(request.user), pk=doc.project_id)
+    return FileResponse(doc.file.open("rb"), as_attachment=True, filename=doc.filename)
+
+
+@role_required(*PROJECT_WRITE_ROLES)
+def document_delete(request, doc_id):
+    """HTMX: delete a document (audited), return refreshed list."""
+    doc = get_object_or_404(ProjectDocument, pk=doc_id)
+    project = doc.project
+    get_object_or_404(_visible_projects(request.user), pk=project.pk)
+    audit.log_delete(module="projects", instance=doc, user=request.user)
+    doc.file.delete(save=False)
+    doc.delete()
+    html = render_to_string("projects/partials/documents.html",
+                            {"project": project}, request=request)
     return HttpResponse(html)

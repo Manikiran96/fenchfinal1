@@ -1,0 +1,16 @@
+{% extends "portal/base_mobile.html" %}
+{% block title %}Update{% endblock %}{% block header %}Post Update{% endblock %}
+{% block content %}
+<p class="p-sub">{{ project.project_number }} · {{ project.customer.name }}</p>
+<form method="post" enctype="multipart/form-data" class="p-form">{% csrf_token %}
+  <label class="p-field"><span>Work stage</span>{{ form.stage }}</label>
+  <label class="p-field"><span>What did you do?</span>{{ form.note }}</label>
+  <label class="p-check">{{ form.is_done }} <span>Mark this stage as completed</span></label>
+
+  <label class="p-field"><span>📷 Photos (you can select multiple)</span>
+    <input class="pinput" type="file" name="photos" accept="image/*" capture="environment" multiple></label>
+
+  <button class="p-btn" type="submit">Submit Update</button>
+</form>
+{% endblock %}
+{% block nav %}{% include "portal/_tech_nav.html" %}{% endblock %}

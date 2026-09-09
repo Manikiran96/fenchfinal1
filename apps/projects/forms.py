@@ -1,6 +1,7 @@
-from django import forms
 from apps.quotations.models import Quotation, QuotationStatus
-from .models import Project, ProjectMilestone, ProjectPayment
+from django import forms
+
+from .models import Project, ProjectDocument, ProjectMilestone, ProjectPayment
 
 INPUT = "input"
 
@@ -67,3 +68,14 @@ class PaymentForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         _style(self)
+
+class ProjectDocumentForm(forms.ModelForm):
+    class Meta:
+        model = ProjectDocument
+        fields = ["category", "title", "file"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for f in self.fields.values():
+            css = f.widget.attrs.get("class", "")
+            f.widget.attrs["class"] = (css + " input").strip()

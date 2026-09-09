@@ -1,0 +1,19 @@
+{% extends "portal/base_mobile.html" %}
+{% block title %}Sales Today{% endblock %}{% block header %}Sales Activity · {{ today }}{% endblock %}
+{% block content %}
+<div class="p-cards">
+  <div class="p-card"><div class="p-num">{{ totals.created_today }}</div><div class="p-lbl">Leads today</div></div>
+  <div class="p-card"><div class="p-num">{{ totals.followups_today }}</div><div class="p-lbl">Follow-ups today</div></div>
+  <div class="p-card"><div class="p-num p-warn">{{ totals.stale }}</div><div class="p-lbl">Not followed up</div></div>
+</div>
+<h3 class="p-h3">By person</h3>
+{% for r in rows %}
+<div class="p-row">
+  <div><b>{{ r.rep.get_full_name|default:r.rep.username }}</b>
+    {% if r.active %}<span class="p-badge s-won">Active today</span>{% else %}<span class="p-badge s-lost">Idle</span>{% endif %}
+    <br><small>📋 {{ r.created_today }} new · ✅ {{ r.followups_today }} follow-ups · {{ r.open_leads }} open · <span class="p-warn">{{ r.stale }} stale</span></small></div>
+</div>
+{% empty %}<p class="p-empty">No sales users.</p>{% endfor %}
+<p class="p-note">“Stale” = open leads with no follow-up in the last 3 days.</p>
+{% endblock %}
+{% block nav %}{% include "portal/_sales_nav.html" %}{% endblock %}
