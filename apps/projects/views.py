@@ -1,14 +1,16 @@
 """Project Management views (Module 5)."""
+from django import forms
 from django.contrib import messages
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import FileResponse, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils import timezone
 from apps.accounts.permissions import role_required
 from apps.accounts.models import Role
+from apps.audit import services as audit
 from apps.quotations.models import Quotation
-from .models import Project, ProjectStage
+from .models import Project, ProjectStage, ProjectDocument
 from .forms import ProjectCreateForm, ProjectUpdateForm, MilestoneForm, PaymentForm
 from . import services
 
@@ -73,9 +75,12 @@ def project_create(request):
 @role_required(*PROJECT_ROLES)
 def project_detail(request, pk):
     project = get_object_or_404(_visible_projects(request.user), pk=pk)
-    "doc_form": ProjectDocumentForm(),
-    return render(request, "projects/project_detail.html", {"project": project, "milestone_form": MilestoneForm(),
-        "payment_form": PaymentForm(initial={"paid_on": timezone.now().date()}), "can_write": request.user.can_manage_projects})
+    return render(request, "projects/project_detail.html", {
+        "project": project,
+        "milestone_form": MilestoneForm(),
+        "doc_form": ProjectDocumentForm(),
+        "payment_form": PaymentForm(initial={"paid_on": timezone.now().date()}),
+        "can_write": request.user.can_manage_projects})
 
 
 @role_required(*PROJECT_WRITE_ROLES)
@@ -84,12 +89,9 @@ def project_edit(request, pk):
     form = ProjectUpdateForm(request.POST or None, instance=project)
     if request.method == "POST" and form.is_valid():
         proj = form.save(commit=False)
+        proj._audit_user = request.user          # records WHO edited
         if proj.stage == ProjectStage.COMMISSIONED and not proj.commissioned_on:
             proj.commissioned_on = timezone.now().date()
-                proj = form.save(commit=False)
-        proj._audit_user = request.user          # 👈 records WHO edited
-        if proj.stage == ProjectStage.COMMISSIONED and not proj.commissioned_on:
-            proj.commissioned_on = timezone.now().date()    
         proj.save()
         messages.success(request, "Project updated.")
         return redirect("projects:project_detail", pk=project.pk)

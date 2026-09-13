@@ -1,0 +1,37 @@
+{% extends "portal/base_mobile.html" %}
+{% block title %}My Tickets{% endblock %}{% block header %}My Tickets{% endblock %}
+{% block content %}
+
+{% if no_tech_profile %}
+<div class="p-msg error">
+  No technician profile linked to your login yet, so tickets cannot be assigned to you.
+  Ask the admin to add you under <b>Service &rsaquo; Technicians</b>.
+</div>
+{% endif %}
+
+<form method="get" class="p-filter">
+  <input class="pinput" type="search" name="q" value="{{ q }}" placeholder="Ticket no, title, customer...">
+  <select class="pinput" name="status" onchange="this.form.submit()">
+    <option value="">All statuses</option>
+    <option value="OPEN" {% if status == "OPEN" %}selected{% endif %}>Open only</option>
+    {% for value, label in statuses %}
+      <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+</form>
+
+{% for t in tickets %}
+<a class="p-row" href="{% url 'portal:tech_ticket_detail' t.pk %}">
+  <div>
+    <b>{{ t.title }}</b><br>
+    <small>{{ t.ticket_number }} &middot; {{ t.customer.name }}</small><br>
+    <small>{{ t.get_category_display }} &middot; {{ t.get_priority_display }} priority</small>
+    {% if t.is_overdue %}<br><small class="p-bad">Overdue &middot; due {{ t.due_at|date:"d M, H:i" }}</small>{% endif %}
+  </div>
+  <span class="p-badge s-{{ t.status|lower }}">{{ t.get_status_display }}</span>
+</a>
+{% empty %}
+<p class="p-empty">No tickets match. Tickets appear here as soon as one is assigned to you.</p>
+{% endfor %}
+{% endblock %}
+{% block nav %}{% include "portal/_tech_nav.html" %}{% endblock %}

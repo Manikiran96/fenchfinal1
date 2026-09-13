@@ -1,0 +1,44 @@
+{% extends "portal/base_mobile.html" %}
+{% block title %}{{ ticket.ticket_number }}{% endblock %}
+{% block header %}{{ ticket.ticket_number }}{% endblock %}
+{% block content %}
+
+<div class="p-card p-wide">
+  <b>{{ ticket.title }}</b>
+  <span class="p-badge s-{{ ticket.status|lower }}">{{ ticket.get_status_display }}</span>
+  <p class="p-lbl">
+    {{ ticket.customer.name }}{% if ticket.project %} &middot; {{ ticket.project.project_number }}{% endif %}<br>
+    {{ ticket.get_category_display }} &middot; {{ ticket.get_priority_display }} priority<br>
+    Due {{ ticket.due_at|date:"d M Y, H:i" }}{% if ticket.is_overdue %} <span class="p-bad">(overdue)</span>{% endif %}
+  </p>
+  {% if ticket.description %}<p>{{ ticket.description|linebreaksbr }}</p>{% endif %}
+  {% if ticket.project and ticket.project.location %}
+    <p class="p-lbl">Site: {{ ticket.project.location }}</p>
+  {% endif %}
+</div>
+
+<h3 class="p-h3">Post an update</h3>
+<form method="post" action="{% url 'portal:tech_ticket_update' ticket.pk %}">
+  {% csrf_token %}
+  <textarea class="pinput" name="note" rows="3" placeholder="What did you do on site?"></textarea>
+  <select class="pinput" name="new_status">
+    <option value="">Add note only (no status change)</option>
+    {% for value, label in allowed_statuses %}
+      <option value="{{ value }}">Mark as {{ label }}</option>
+    {% endfor %}
+  </select>
+  <button class="p-btn" type="submit">Save update</button>
+</form>
+
+<h3 class="p-h3">History</h3>
+{% for u in updates %}
+<div class="p-row">
+  <div>
+    {{ u.note|linebreaksbr }}<br>
+    <small>{{ u.created_by|default:"System" }} &middot; {{ u.created_at|date:"d M Y, H:i" }}</small>
+    {% if u.new_status %}<br><small>{{ u.old_status }} &rarr; {{ u.new_status }}</small>{% endif %}
+  </div>
+</div>
+{% empty %}<p class="p-empty">No updates yet.</p>{% endfor %}
+{% endblock %}
+{% block nav %}{% include "portal/_tech_nav.html" %}{% endblock %}

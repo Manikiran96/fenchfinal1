@@ -16,6 +16,8 @@ from django.utils import timezone
 from apps.accounts.models import Role, User
 from apps.crm.models import Lead, LeadActivity, LeadStatus
 from apps.projects.models import Project
+from apps.service.models import (ServiceTicket, TicketStatus, OPEN_STATUSES)
+from apps.service import services as service_services
 from .models import StageUpdate, StagePhoto, WorkStage
 from .forms import QuickLeadForm, FollowUpForm, StageUpdateForm
 
@@ -184,26 +186,122 @@ def _require_tech(user):
 
 
 def _my_projects(user):
-    """Projects assigned to this technician (via Project.technicians M2M)."""
+    """Projects this technician is on.
+
+    A technician is "on" a project either because they are in
+    Project.technicians, OR because a service ticket on that project is
+    assigned to them. Without the second half, a technician who only ever
+    gets tickets would see an empty portal.
+    """
     qs = Project.objects.select_related("customer")
     if user.is_field_staff:
-        qs = qs.filter(technicians=user)
+        qs = qs.filter(Q(technicians=user) | Q(tickets__assigned_to__user=user))
     return qs.distinct()
+
+
+def _my_tickets(user):
+    """Service tickets assigned to this technician.
+
+    Tickets point at the Technician *profile* (service.Technician), not at
+    User directly -- so we traverse assigned_to__user. Admin-level users see
+    everything so they can verify what a technician sees.
+    """
+    qs = (ServiceTicket.objects
+          .select_related("customer", "project", "assigned_to__user")
+          .order_by("-created_at"))
+    if user.is_field_staff:
+        qs = qs.filter(assigned_to__user=user)
+    return qs.distinct()
+
+
+def _has_tech_profile(user):
+    """Tickets can only be assigned to a user who has a Technician profile."""
+    return hasattr(user, "technician_profile")
 
 
 @login_required
 def tech_dashboard(request):
     _require_tech(request.user)
     projects = _my_projects(request.user)
+    tickets = _my_tickets(request.user)
+    open_tickets = tickets.filter(status__in=list(OPEN_STATUSES))
+
     stats = {
         "total": projects.count(),
         "active": projects.exclude(stage__in=["COMMISSIONED", "CLOSED"]).count(),
         "updates_today": StageUpdate.objects.filter(
             technician=request.user, created_at__date=timezone.localdate()).count(),
+        "open_tickets": open_tickets.count(),
+        "overdue_tickets": sum(1 for t in open_tickets if t.is_overdue),
+        "resolved_today": tickets.filter(
+            status=TicketStatus.RESOLVED,
+            resolved_at__date=timezone.localdate()).count(),
     }
     return render(request, "portal/tech/dashboard.html", {
-        "stats": stats, "projects": projects[:10],
+        "stats": stats,
+        "projects": projects[:10],
+        "open_tickets": open_tickets[:10],
+        # Warn the technician (and admins) when no Technician profile exists,
+        # because tickets simply cannot be assigned to them until it does.
+        "no_tech_profile": request.user.is_field_staff and not _has_tech_profile(request.user),
     })
+
+
+@login_required
+def tech_ticket_list(request):
+    _require_tech(request.user)
+    tickets = _my_tickets(request.user)
+    q = request.GET.get("q", "").strip()
+    status = request.GET.get("status", "").strip()
+    if q:
+        tickets = tickets.filter(
+            Q(ticket_number__icontains=q) | Q(title__icontains=q)
+            | Q(customer__name__icontains=q) | Q(project__project_number__icontains=q))
+    if status == "OPEN":
+        tickets = tickets.filter(status__in=list(OPEN_STATUSES))
+    elif status:
+        tickets = tickets.filter(status=status)
+    return render(request, "portal/tech/ticket_list.html", {
+        "tickets": tickets[:100], "q": q, "status": status,
+        "statuses": TicketStatus.choices,
+        "no_tech_profile": request.user.is_field_staff and not _has_tech_profile(request.user),
+    })
+
+
+@login_required
+def tech_ticket_detail(request, pk):
+    _require_tech(request.user)
+    ticket = get_object_or_404(_my_tickets(request.user), pk=pk)
+    # A technician may move a ticket forward, but never cancel/close it.
+    allowed = [TicketStatus.IN_PROGRESS, TicketStatus.ON_HOLD, TicketStatus.RESOLVED]
+    return render(request, "portal/tech/ticket_detail.html", {
+        "ticket": ticket,
+        "updates": ticket.updates.all(),
+        "allowed_statuses": [(v, l) for v, l in TicketStatus.choices if v in allowed],
+    })
+
+
+@login_required
+def tech_ticket_update(request, pk):
+    """Technician posts a note and/or moves the ticket status."""
+    _require_tech(request.user)
+    ticket = get_object_or_404(_my_tickets(request.user), pk=pk)
+    if request.method == "POST":
+        note = request.POST.get("note", "").strip()
+        new_status = request.POST.get("new_status", "").strip()
+        allowed = {TicketStatus.IN_PROGRESS, TicketStatus.ON_HOLD, TicketStatus.RESOLVED}
+
+        if new_status and new_status in allowed:
+            service_services.change_status(
+                ticket, new_status, user=request.user,
+                note=note, resolution=note if new_status == TicketStatus.RESOLVED else "")
+            messages.success(request, f"Ticket marked {ticket.get_status_display()}.")
+        elif note:
+            service_services.add_update(ticket, note, user=request.user)
+            messages.success(request, "Update added.")
+        else:
+            messages.error(request, "Add a note or pick a status.")
+    return redirect("portal:tech_ticket_detail", pk=ticket.pk)
 
 
 @login_required

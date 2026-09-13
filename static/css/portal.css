@@ -81,3 +81,20 @@ textarea.pinput{resize:vertical}
 .p-nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:22px;color:var(--muted);flex:1;padding:4px}
 .p-nav-item span{font-size:11px}
 .p-nav-add{color:var(--brand)}
+
+/* --- technician ticket screens --- */
+.p-bad { color: #ef4444; }
+.p-wide { grid-column: 1 / -1; text-align: left; }
+.p-filter { display: flex; gap: 8px; margin: 10px 0; }
+.p-filter .pinput { flex: 1; }
+.p-link {
+  display: block; text-align: center; padding: 10px;
+  color: #38bdf8; text-decoration: none; font-size: 14px;
+}
+.p-badge.s-open        { background: #1e3a8a; color: #dbeafe; }
+.p-badge.s-assigned    { background: #3730a3; color: #e0e7ff; }
+.p-badge.s-in_progress { background: #92400e; color: #fef3c7; }
+.p-badge.s-on_hold     { background: #374151; color: #e5e7eb; }
+.p-badge.s-resolved    { background: #065f46; color: #d1fae5; }
+.p-badge.s-closed      { background: #1f2937; color: #9ca3af; }
+.p-badge.s-cancelled   { background: #7f1d1d; color: #fee2e2; }

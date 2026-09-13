@@ -21,4 +21,8 @@ urlpatterns = [
     path("tech/projects/", views.tech_project_list, name="tech_project_list"),
     path("tech/projects/<int:pk>/", views.tech_project_detail, name="tech_project_detail"),
     path("tech/projects/<int:pk>/update/", views.tech_stage_update, name="tech_stage_update"),
+    # technician tickets
+    path("tech/tickets/", views.tech_ticket_list, name="tech_ticket_list"),
+    path("tech/tickets/<int:pk>/", views.tech_ticket_detail, name="tech_ticket_detail"),
+    path("tech/tickets/<int:pk>/update/", views.tech_ticket_update, name="tech_ticket_update"),
 ]
