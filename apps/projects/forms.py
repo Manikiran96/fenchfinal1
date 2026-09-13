@@ -1,7 +1,7 @@
 from django import forms
 from apps.quotations.models import Quotation, QuotationStatus
 from .models import Project, ProjectMilestone, ProjectPayment
-
+from apps.accounts.models import User, Role  
 INPUT = "input"
 
 
@@ -67,3 +67,24 @@ class PaymentForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         _style(self)
+
+class AssignTechniciansForm(forms.Form):
+    """Pick which field staff are assigned to a project.
+
+    Includes both Technicians and Service Engineers, because both are
+    `is_field_staff` and the technician portal filters on that.
+    """
+    technicians = forms.ModelMultipleChoiceField(
+        queryset=User.objects.none(),          # set in __init__
+        required=False,                        # allow clearing everyone
+        widget=forms.CheckboxSelectMultiple,
+        label="Assign field staff",
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["technicians"].queryset = (
+            User.objects
+            .filter(role__in=[Role.TECHNICIAN, Role.SERVICE_ENGINEER], is_active=True)
+            .order_by("first_name", "username")
+        )

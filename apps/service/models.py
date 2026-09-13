@@ -3,6 +3,7 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 from apps.core.models import TimeStampedModel
+from apps.projects.storage_paths import ticket_photo_path   # noqa
 
 
 class Technician(TimeStampedModel):
@@ -35,6 +36,7 @@ class TicketPriority(models.TextChoices):
 
 
 class TicketCategory(models.TextChoices):
+    NEWPROJECT = "NEWPROJECT","New Project"
     INVERTER = "INVERTER", "Inverter Fault"
     PANEL = "PANEL", "Panel Issue"
     WIRING = "WIRING", "Wiring / Electrical"
@@ -187,3 +189,16 @@ class AMCVisit(TimeStampedModel):
     @property
     def is_overdue(self):
         return (not self.is_done) and self.scheduled_date < timezone.now().date()
+class TicketPhoto(TimeStampedModel):
+    """A photo attached to a service-ticket update (before/after work)."""
+    ticket_update = models.ForeignKey(
+        "service.TicketUpdate", on_delete=models.CASCADE, related_name="photos"
+    )
+    image = models.ImageField(upload_to=ticket_photo_path)
+    caption = models.CharField(max_length=120, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Photo for ticket update {self.ticket_update_id}"

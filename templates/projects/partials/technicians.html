@@ -1,0 +1,31 @@
+{% if assigned_saved %}<div class="msg success">Technicians updated.</div>{% endif %}
+
+<div class="tech-current">
+  {% for t in project.technicians.all %}
+    <span class="badge s-won">{{ t.get_full_name|default:t.username }}
+      <small class="muted">&middot; {{ t.get_role_display }}</small></span>
+  {% empty %}
+    <p class="muted">No technicians assigned yet — they won't see this project in their portal.</p>
+  {% endfor %}
+</div>
+
+{% if can_write %}
+<form hx-post="{% url 'projects:assign_technicians' project.pk %}"
+      hx-target="#technicians" hx-swap="innerHTML" class="tech-form">
+  {% csrf_token %}
+  <div class="tech-picker">
+    {% for cb in assign_form.technicians %}
+      <label class="tech-option">
+        {{ cb.tag }}
+        <span>{{ cb.choice_label }}</span>
+      </label>
+    {% empty %}
+      <p class="muted">No technician users exist yet. Create users with role
+        <b>Technician</b> or <b>Service Engineer</b> first.</p>
+    {% endfor %}
+  </div>
+  <div class="form-actions">
+    <button class="btn primary" type="submit">Save Assignment</button>
+  </div>
+</form>
+{% endif %}

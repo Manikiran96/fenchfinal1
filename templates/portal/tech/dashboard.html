@@ -1,42 +1,36 @@
 {% extends "portal/base_mobile.html" %}
-{% block title %}My Work{% endblock %}{% block header %}Hi, {{ user.first_name|default:user.username }}{% endblock %}
+{% block title %}My Work{% endblock %}
+{% block header %}Hi, {{ user.first_name|default:user.username }}{% endblock %}
 {% block content %}
-
-{% if no_tech_profile %}
-<div class="p-msg error">
-  No technician profile linked to your login yet, so tickets cannot be assigned to you.
-  Ask the admin to add you under <b>Service &rsaquo; Technicians</b>.
-</div>
-{% endif %}
-
 <div class="p-cards">
-  <div class="p-card"><div class="p-num">{{ stats.open_tickets }}</div><div class="p-lbl">Open tickets</div></div>
-  <div class="p-card"><div class="p-num p-bad">{{ stats.overdue_tickets }}</div><div class="p-lbl">Overdue</div></div>
-  <div class="p-card"><div class="p-num p-good">{{ stats.resolved_today }}</div><div class="p-lbl">Resolved today</div></div>
-  <div class="p-card"><div class="p-num">{{ stats.active }}</div><div class="p-lbl">Active projects</div></div>
-  <div class="p-card"><div class="p-num">{{ stats.total }}</div><div class="p-lbl">Total assigned</div></div>
+  <div class="p-card"><div class="p-num p-warn">{{ stats.open_tickets }}</div><div class="p-lbl">Open tickets</div></div>
+  <div class="p-card"><div class="p-num">{{ stats.active_projects }}</div><div class="p-lbl">Active projects</div></div>
+  <div class="p-card"><div class="p-num">{{ stats.total_projects }}</div><div class="p-lbl">Total projects</div></div>
   <div class="p-card"><div class="p-num p-good">{{ stats.updates_today }}</div><div class="p-lbl">Updates today</div></div>
 </div>
 
-<h3 class="p-h3">My tickets</h3>
-{% for t in open_tickets %}
-<a class="p-row" href="{% url 'portal:tech_ticket_detail' t.pk %}">
-  <div>
-    <b>{{ t.title }}</b><br>
-    <small>{{ t.ticket_number }} &middot; {{ t.customer.name }}{% if t.project %} &middot; {{ t.project.project_number }}{% endif %}</small>
-    {% if t.is_overdue %}<br><small class="p-bad">Overdue</small>{% endif %}
-  </div>
-  <span class="p-badge s-{{ t.status|lower }}">{{ t.get_status_display }}</span>
-</a>
-{% empty %}<p class="p-empty">No open tickets assigned to you.</p>{% endfor %}
-{% if open_tickets %}<a class="p-link" href="{% url 'portal:tech_ticket_list' %}">View all tickets &rsaquo;</a>{% endif %}
+<h3 class="p-h3">&#127915; My Tickets</h3>
+{% for t in tickets %}
+  <a class="p-row" href="{% url 'portal:tech_ticket_detail' t.pk %}">
+    <div><b>{{ t.title }}</b><br>
+      <small>{{ t.ticket_number }} &middot; {{ t.customer.name }}</small></div>
+    <span class="p-badge p-{{ t.priority|lower }}">{{ t.get_priority_display }}</span>
+  </a>
+{% empty %}
+  <p class="p-empty">No open tickets. &#127881;</p>
+{% endfor %}
+<a class="p-btn p-btn-sec" href="{% url 'portal:tech_ticket_list' %}">View all tickets</a>
 
-<h3 class="p-h3">My projects</h3>
+<h3 class="p-h3">&#128295; My Projects</h3>
 {% for p in projects %}
-<a class="p-row" href="{% url 'portal:tech_project_detail' p.pk %}">
-  <div><b>{{ p.customer.name }}</b><br><small>{{ p.project_number }} &middot; {{ p.capacity_kw }} kW{% if p.location %} &middot; {{ p.location }}{% endif %}</small></div>
-  <span class="p-badge s-{{ p.stage|lower }}">{{ p.get_stage_display }}</span>
-</a>
-{% empty %}<p class="p-empty">No projects assigned yet.</p>{% endfor %}
+  <a class="p-row" href="{% url 'portal:tech_project_detail' p.pk %}">
+    <div><b>{{ p.customer.name }}</b><br>
+      <small>{{ p.project_number }} &middot; {{ p.capacity_kw }} kW</small></div>
+    <span class="p-badge s-{{ p.stage|lower }}">{{ p.get_stage_display }}</span>
+  </a>
+{% empty %}
+  <p class="p-empty">No projects assigned yet.<br><small>Ask admin to assign you on the project.</small></p>
+{% endfor %}
+<a class="p-btn p-btn-sec" href="{% url 'portal:tech_project_list' %}">View all projects</a>
 {% endblock %}
 {% block nav %}{% include "portal/_tech_nav.html" %}{% endblock %}

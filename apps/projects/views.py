@@ -13,7 +13,8 @@ from apps.quotations.models import Quotation
 from .models import Project, ProjectStage, ProjectDocument
 from .forms import ProjectCreateForm, ProjectUpdateForm, MilestoneForm, PaymentForm
 from . import services
-
+from apps.audit import services as audit                     # noqa
+from .forms import AssignTechniciansForm  
 PROJECT_ROLES = (Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.PROJECT_MANAGER, Role.ACCOUNTS)
 PROJECT_WRITE_ROLES = (Role.SUPER_ADMIN, Role.ADMIN, Role.BRANCH_MANAGER, Role.PROJECT_MANAGER)
 
@@ -176,4 +177,75 @@ def document_delete(request, doc_id):
     doc.delete()
     html = render_to_string("projects/partials/documents.html",
                             {"project": project}, request=request)
+    return HttpResponse(html)
+
+
+@role_required(*PROJECT_ROLES)
+def project_files(request, pk):
+    """One place showing EVERY file attached to a project:
+    documents + payment receipts + technician site photos + ticket photos.
+    """
+    from apps.portal.models import StagePhoto
+    from apps.service.models import TicketPhoto
+    from .storage_paths import project_root
+
+    project = get_object_or_404(_visible_projects(request.user), pk=pk)
+
+    documents = project.documents.select_related("uploaded_by")
+    receipts = project.payments.exclude(receipt="").exclude(receipt__isnull=True)
+    site_photos = (StagePhoto.objects
+                   .filter(stage_update__project=project)
+                   .select_related("stage_update", "stage_update__technician"))
+    ticket_photos = (TicketPhoto.objects
+                     .filter(ticket_update__ticket__project=project)
+                     .select_related("ticket_update", "ticket_update__ticket"))
+
+    total = documents.count() + receipts.count() + site_photos.count() + ticket_photos.count()
+
+    return render(request, "projects/project_files.html", {
+        "project": project,
+        "documents": documents,
+        "receipts": receipts,
+        "site_photos": site_photos,
+        "ticket_photos": ticket_photos,
+        "total": total,
+        "folder": project_root(project),
+        "can_write": request.user.can_manage_projects,
+    })
+@role_required(*PROJECT_WRITE_ROLES)
+def assign_technicians(request, pk):
+    """HTMX: set the field staff assigned to this project.
+
+    M2M changes are NOT captured by the AuditableModel mixin (it snapshots
+    concrete fields only), so we log the before/after list manually.
+    """
+    project = get_object_or_404(_visible_projects(request.user), pk=pk)
+
+    if request.method == "POST":
+        form = AssignTechniciansForm(request.POST)
+        if form.is_valid():
+            before = sorted(t.get_full_name() or t.username
+                            for t in project.technicians.all())
+            selected = list(form.cleaned_data["technicians"])
+            project.technicians.set(selected)
+            after = sorted(t.get_full_name() or t.username for t in selected)
+
+            if before != after:
+                audit.write(
+                    module="projects", instance=project, action="UPDATE",
+                    changes=[{
+                        "field": "technicians",
+                        "old": ", ".join(before) or "—",
+                        "new": ", ".join(after) or "—",
+                    }],
+                    user=request.user,
+                )
+            messages.success(request, "Technicians updated.")
+
+    html = render_to_string("projects/partials/technicians.html", {
+        "project": project,
+        "assign_form": AssignTechniciansForm(
+            initial={"technicians": project.technicians.all()}),
+        "can_write": request.user.can_manage_projects,
+    }, request=request)
     return HttpResponse(html)

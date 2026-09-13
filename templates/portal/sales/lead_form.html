@@ -1,10 +1,16 @@
 {% extends "portal/base_mobile.html" %}
-{% block title %}New Lead{% endblock %}{% block header %}New Lead{% endblock %}
+{% block title %}{{ title|default:"New Lead" }}{% endblock %}
+{% block header %}{{ title|default:"New Lead" }}{% endblock %}
 {% block content %}
-<form method="post" class="p-form">{% csrf_token %}
+<form method="post" class="p-form">
+  {% csrf_token %}
   {% for field in form %}
-    <label class="p-field"><span>{{ field.label }}</span>{{ field }}
-      {% for e in field.errors %}<em class="p-err">{{ e }}</em>{% endfor %}</label>
+    <label class="p-field">
+      <span>{{ field.label }}</span>
+      {{ field }}
+      {% if field.help_text %}<small class="p-muted">{{ field.help_text }}</small>{% endif %}
+      {% for e in field.errors %}<em class="p-err">{{ e }}</em>{% endfor %}
+    </label>
   {% endfor %}
   <button class="p-btn" type="submit">Save Lead</button>
 </form>

@@ -1,17 +1,43 @@
 {% extends "portal/base_mobile.html" %}
-{% block title %}{{ lead.customer_name }}{% endblock %}{% block header %}{{ lead.lead_number }}{% endblock %}
+{% block title %}{{ lead.customer_name }}{% endblock %}
+{% block header %}{{ lead.lead_number }}{% endblock %}
 {% block content %}
 <div class="p-detail">
   <h2>{{ lead.customer_name }}</h2>
-  <p><a class="p-call" href="tel:{{ lead.mobile }}">📞 {{ lead.mobile }}</a></p>
-  <p><small>{{ lead.city }} · {{ lead.get_source_display }} · {{ lead.expected_capacity_kw|default:"-" }} kW</small></p>
+  <p><a class="p-call" href="tel:{{ lead.mobile }}">&#128222; {{ lead.mobile }}</a></p>
+  <p><small>{{ lead.city }} &middot; {{ lead.get_source_display }}
+    &middot; {{ lead.expected_capacity_kw|default:"-" }} kW</small></p>
   <span class="p-badge s-{{ lead.status|lower }}">{{ lead.get_status_display }}</span>
+  <a class="p-btn p-btn-sec" href="{% url 'portal:sales_lead_edit' lead.pk %}">Edit details</a>
+</div>
+
+<div class="p-detail">
+  <h3 class="p-h3" style="margin-top:0">&#128176; Costing</h3>
+  <p><b>Project cost:</b>
+    {% if lead.project_cost %}Rs {{ lead.project_cost }}{% else %}<span class="p-muted">Not set</span>{% endif %}</p>
+
+  <h3 class="p-h3">&#129309; Referral</h3>
+  <p><b>Referred by:</b> {{ lead.get_referred_by_display }}</p>
+  {% if lead.referral_name %}<p><b>Name:</b> {{ lead.referral_name }}</p>{% endif %}
+  {% if lead.referral_mobile %}
+    <p><b>Mobile:</b> <a class="p-call" href="tel:{{ lead.referral_mobile }}">{{ lead.referral_mobile }}</a></p>
+  {% endif %}
+  {% if lead.referral_bonus %}<p><b>Bonus:</b> Rs {{ lead.referral_bonus }}</p>{% endif %}
+
+  {% if lead.remarks %}
+    <h3 class="p-h3">&#128221; Remarks</h3>
+    <p>{{ lead.remarks }}</p>
+  {% endif %}
 </div>
 
 <h3 class="p-h3">Add follow-up</h3>
-<form method="post" action="{% url 'portal:sales_add_followup' lead.pk %}" class="p-form">{% csrf_token %}
+<form method="post" action="{% url 'portal:sales_add_followup' lead.pk %}" class="p-form">
+  {% csrf_token %}
   <label class="p-field"><span>Update status</span>
-    <select class="pinput" name="status">{% for v,l in statuses %}<option value="{{ v }}" {% if v == lead.status %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></label>
+    <select class="pinput" name="status">
+      {% for v,l in statuses %}<option value="{{ v }}" {% if v == lead.status %}selected{% endif %}>{{ l }}</option>{% endfor %}
+    </select>
+  </label>
   <label class="p-field"><span>Note</span>{{ followup_form.note }}</label>
   <label class="p-field"><span>Next follow-up date</span>{{ followup_form.next_follow_up }}</label>
   <button class="p-btn" type="submit">Save Follow-up</button>
@@ -19,8 +45,12 @@
 
 <h3 class="p-h3">History</h3>
 {% for a in lead.activities.all %}
-<div class="p-timeline"><div class="p-dot"></div><div><p>{{ a.note }}</p>
-  <small>{{ a.created_at|date:"d M, H:i" }}{% if a.next_follow_up %} · next: {{ a.next_follow_up }}{% endif %}</small></div></div>
-{% empty %}<p class="p-empty">No follow-ups yet.</p>{% endfor %}
+  <div class="p-timeline"><div class="p-dot"></div>
+    <div><p>{{ a.note }}</p>
+      <small>{{ a.created_at|date:"d M, H:i" }}{% if a.next_follow_up %} &middot; next: {{ a.next_follow_up }}{% endif %}</small></div>
+  </div>
+{% empty %}
+  <p class="p-empty">No follow-ups yet.</p>
+{% endfor %}
 {% endblock %}
 {% block nav %}{% include "portal/_sales_nav.html" %}{% endblock %}

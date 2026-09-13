@@ -1,5 +1,6 @@
 from django import forms
 from apps.crm.models import Lead, LeadActivity
+from apps.service.models import TicketStatus
 from .models import StageUpdate
 
 INPUT = "pinput"
@@ -15,12 +16,16 @@ def _style(form):
 
 
 class QuickLeadForm(forms.ModelForm):
-    """Minimal lead-capture form for the mobile sales portal."""
+    """Lead capture for the mobile sales portal (incl. cost + referral)."""
     class Meta:
         model = Lead
-        fields = ["customer_name", "mobile", "email", "city",
-                  "source", "expected_capacity_kw", "remarks"]
-        widgets = {"remarks": forms.Textarea(attrs={"rows": 2, "placeholder": "Notes..."})}
+        fields = [
+            "customer_name", "mobile", "email", "city",
+            "source", "expected_capacity_kw", "project_cost",
+            "referred_by", "referral_name", "referral_mobile", "referral_bonus",
+            "remarks",
+        ]
+        widgets = {"remarks": forms.Textarea(attrs={"rows": 2, "placeholder": "Any remarks..."})}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -28,7 +33,6 @@ class QuickLeadForm(forms.ModelForm):
 
 
 class FollowUpForm(forms.ModelForm):
-    """Add a day-wise follow-up note to a lead."""
     class Meta:
         model = LeadActivity
         fields = ["note", "next_follow_up"]
@@ -43,11 +47,25 @@ class FollowUpForm(forms.ModelForm):
 
 
 class StageUpdateForm(forms.ModelForm):
-    """Technician posts a work-stage update (photos handled separately)."""
     class Meta:
         model = StageUpdate
         fields = ["stage", "note", "is_done"]
         widgets = {"note": forms.Textarea(attrs={"rows": 2, "placeholder": "What did you do?"})}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _style(self)
+
+
+class TicketWorkForm(forms.Form):
+    """Technician ticket update: status + note (+ photos handled in the view)."""
+    new_status = forms.ChoiceField(choices=TicketStatus.choices, label="Status")
+    note = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 2, "placeholder": "What did you do on site?"}))
+    resolution = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 2, "placeholder": "Resolution (if resolving)..."}))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

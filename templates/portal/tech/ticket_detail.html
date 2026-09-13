@@ -2,43 +2,50 @@
 {% block title %}{{ ticket.ticket_number }}{% endblock %}
 {% block header %}{{ ticket.ticket_number }}{% endblock %}
 {% block content %}
-
-<div class="p-card p-wide">
-  <b>{{ ticket.title }}</b>
-  <span class="p-badge s-{{ ticket.status|lower }}">{{ ticket.get_status_display }}</span>
-  <p class="p-lbl">
-    {{ ticket.customer.name }}{% if ticket.project %} &middot; {{ ticket.project.project_number }}{% endif %}<br>
-    {{ ticket.get_category_display }} &middot; {{ ticket.get_priority_display }} priority<br>
-    Due {{ ticket.due_at|date:"d M Y, H:i" }}{% if ticket.is_overdue %} <span class="p-bad">(overdue)</span>{% endif %}
+<div class="p-detail">
+  <h2>{{ ticket.title }}</h2>
+  <p><a class="p-call" href="tel:{{ ticket.customer.phone }}">&#128222; {{ ticket.customer.name }}</a></p>
+  {% if ticket.project %}<p><small>&#128295; {{ ticket.project.project_number }}
+    {% if ticket.project.location %}&middot; {{ ticket.project.location }}{% endif %}</small></p>{% endif %}
+  <p>
+    <span class="p-badge p-{{ ticket.priority|lower }}">{{ ticket.get_priority_display }}</span>
+    <span class="p-badge s-{{ ticket.status|lower }}">{{ ticket.get_status_display }}</span>
   </p>
-  {% if ticket.description %}<p>{{ ticket.description|linebreaksbr }}</p>{% endif %}
-  {% if ticket.project and ticket.project.location %}
-    <p class="p-lbl">Site: {{ ticket.project.location }}</p>
-  {% endif %}
+  {% if ticket.description %}<p>{{ ticket.description }}</p>{% endif %}
 </div>
 
-<h3 class="p-h3">Post an update</h3>
-<form method="post" action="{% url 'portal:tech_ticket_update' ticket.pk %}">
+<h3 class="p-h3">Update this ticket</h3>
+<form method="post" enctype="multipart/form-data"
+      action="{% url 'portal:tech_ticket_update' ticket.pk %}" class="p-form">
   {% csrf_token %}
-  <textarea class="pinput" name="note" rows="3" placeholder="What did you do on site?"></textarea>
-  <select class="pinput" name="new_status">
-    <option value="">Add note only (no status change)</option>
-    {% for value, label in allowed_statuses %}
-      <option value="{{ value }}">Mark as {{ label }}</option>
-    {% endfor %}
-  </select>
-  <button class="p-btn" type="submit">Save update</button>
+  <label class="p-field"><span>Status</span>{{ form.new_status }}</label>
+  <label class="p-field"><span>What did you do?</span>{{ form.note }}</label>
+  <label class="p-field"><span>Resolution (if resolving)</span>{{ form.resolution }}</label>
+  <label class="p-field"><span>&#128247; Photos</span>
+    <input class="pinput" type="file" name="photos" accept="image/*" capture="environment" multiple>
+  </label>
+  <button class="p-btn" type="submit">Submit Update</button>
 </form>
 
 <h3 class="p-h3">History</h3>
 {% for u in updates %}
-<div class="p-row">
-  <div>
-    {{ u.note|linebreaksbr }}<br>
-    <small>{{ u.created_by|default:"System" }} &middot; {{ u.created_at|date:"d M Y, H:i" }}</small>
-    {% if u.new_status %}<br><small>{{ u.old_status }} &rarr; {{ u.new_status }}</small>{% endif %}
+  <div class="p-update">
+    <div class="p-update-head">
+      <b>{{ u.note|truncatechars:60 }}</b>
+      {% if u.new_status %}<span class="p-badge s-{{ u.new_status|lower }}">{{ u.new_status }}</span>{% endif %}
+      <small>{{ u.created_at|date:"d M, H:i" }}</small>
+    </div>
+    {% if u.photos.all %}
+      <div class="p-photos">
+        {% for ph in u.photos.all %}
+          <a href="{{ ph.image.url }}" target="_blank"><img src="{{ ph.image.url }}" alt="ticket photo"></a>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% if u.created_by %}<small class="p-muted">by {{ u.created_by.get_full_name|default:u.created_by.username }}</small>{% endif %}
   </div>
-</div>
-{% empty %}<p class="p-empty">No updates yet.</p>{% endfor %}
+{% empty %}
+  <p class="p-empty">No updates yet.</p>
+{% endfor %}
 {% endblock %}
 {% block nav %}{% include "portal/_tech_nav.html" %}{% endblock %}

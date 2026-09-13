@@ -4,6 +4,7 @@ from django.db import models
 from django.utils import timezone
 from apps.core.models import TimeStampedModel
 from apps.audit.mixins import AuditableModel
+from .storage_paths import project_document_path, payment_receipt_path   # noqa
 
 
 class ProjectType(models.TextChoices):
