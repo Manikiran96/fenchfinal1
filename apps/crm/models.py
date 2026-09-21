@@ -42,6 +42,24 @@ class Lead(TimeStampedModel):
     status = models.CharField(max_length=20, choices=LeadStatus.choices, default=LeadStatus.NEW)
     assigned_to = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
                                     on_delete=models.SET_NULL, related_name="assigned_leads")
+    
+    
+    referral_name = models.CharField(max_length=255, blank=True, null=True)
+    referral_mobile = models.CharField(max_length=20, blank=True, null=True)
+    referred_by = models.CharField(max_length=255, blank=True, null=True)
+    project_cost = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        blank=True,
+        null=True
+    )
+    referral_bonus = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        blank=True,
+        null=True
+    
+    
     is_converted = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
