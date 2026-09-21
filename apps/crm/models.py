@@ -57,7 +57,7 @@ class Lead(TimeStampedModel):
         max_digits=12,
         decimal_places=2,
         blank=True,
-        null=True
+        null=True)
     
     
     is_converted = models.BooleanField(default=False)
