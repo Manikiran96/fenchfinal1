@@ -59,9 +59,9 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {"default": {
     
     "ENGINE": "django.db.backends.postgresql",
-    "NAME": os.getenv("POSTGRES_DB", "solar_erp"),
-    "USER": os.getenv("POSTGRES_USER", "solar"),
-    "PASSWORD": os.getenv("POSTGRES_PASSWORD", "solar_pass"),
+    "NAME": 'solae_erp',#os.getenv("POSTGRES_DB", "solar_erp"),
+    "USER": 'solar',#os.getenv("POSTGRES_USER", "solar"),
+    "PASSWORD": 'admin@123',#os.getenv("POSTGRES_PASSWORD", "solar_pass"),
     "HOST": os.getenv("POSTGRES_HOST", "localhost"),
     "PORT": os.getenv("POSTGRES_PORT", "5432"),
 }}
